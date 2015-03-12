@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<meta charset="utf-8">
+		<title>{{ pagetitle }}</title>
+		<meta name="generator" content="Bootply" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/font-awesome.min.css" rel="stylesheet">
+		<!--[if lt IE 9]>
+			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link href="css/styles.css" rel="stylesheet">
+	</head>
+	<body>
+		
+<div class="container-full">
+
+      <div class="row">
+       
+        <div class="col-lg-12 text-center v-center">
+          
+          <h1>{{ heading }}</h1>
+          <p class="lead">{{ subheading }}</p>
+          <br><br>
+          <div class="srvmsg"></div>
+          
+          <div class="spinner">
+			  <div class="dot1"></div>
+			  <div class="dot2"></div>
+		  </div>
+		  
+        </div>
+        
+      </div> <!-- /row -->
+    
+</div> <!-- /container full -->
+
+<div class="container">
+  
+  	<hr>
+    
+	<div class="row">
+        <div class="col-lg-12">
+        <br><br>
+          <p class="pull-right"><a href="http://www.bootply.com">Template from Bootply</a> &nbsp; {{ license }}©Copyright {{ year }} {{ author }}</p>
+        <br><br>
+        </div>
+    </div>
+</div>
+
+
+	<!-- script references -->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+	</body>
+</html>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+    refreshData();
+    });
+
+    function refreshData(){
+		$.ajax({
+			url: "process/check",
+			type:"POST",
+			data:"loginsession={{ loginsession }}",
+			success: function(data){
+				//alert(data);
+				if(data === "Waiting.."){
+				  $( ".srvmsg" ).text(data);
+				} else {
+				    obj = JSON.parse(data);
+				    name = obj.userinfo.nama;
+				    idnumber = obj.userinfo.nik;
+				  $( ".srvmsg" ).text("Hello "+name);
+				  $.post("./session_starter", {"idnumber": idnumber, "name": name}, function(results) {
+				  	//alert(results);
+	          window.location.replace('./home');
+	        });
+				}
+				setTimeout(refreshData, 1000);
+			},
+			error: function() {
+				$( ".srvmsg" ).text("Cannot connect to SI");				
+				setTimeout(refreshData, 1000);
+			}
+			
+		});
+	}
+</script>
+
+<style>
+.spinner {
+  margin: 100px auto;
+  width: 40px;
+  height: 40px;
+  position: relative;
+  text-align: center;
+  
+  -webkit-animation: rotate 2.0s infinite linear;
+  animation: rotate 2.0s infinite linear;
+}
+
+.dot1, .dot2 {
+  width: 60%;
+  height: 60%;
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  background-color: #ffffff;
+  border-radius: 100%;
+  
+  -webkit-animation: bounce 2.0s infinite ease-in-out;
+  animation: bounce 2.0s infinite ease-in-out;
+}
+
+.dot2 {
+  top: auto;
+  bottom: 0px;
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+@-webkit-keyframes rotate { 100% { -webkit-transform: rotate(360deg) }}
+@keyframes rotate { 100% { transform: rotate(360deg); -webkit-transform: rotate(360deg) }}
+
+@-webkit-keyframes bounce {
+  0%, 100% { -webkit-transform: scale(0.0) }
+  50% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes bounce {
+  0%, 100% { 
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+}
+</style>

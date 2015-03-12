@@ -1,0 +1,4 @@
+vendor/
+.c9
+composer.phar
+php.ini
