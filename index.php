@@ -27,6 +27,12 @@ $app->get('/', function () use ($app) {
     $app->redirect('/login');
 });
 
+//Parse Backend
+use Parse\ParseClient;
+$app_id = "";
+$rest_key = "";
+$master_key= "";
+ParseClient::initialize( $app_id, $rest_key, $master_key );
 
 //Config
 $configfile = 'config.json';
@@ -39,7 +45,9 @@ require 'lib/sending.php';  // Handling sending http request function
 //Routes
 require 'routes/login.php';  // Handling login function
 require 'routes/session.php';  // Handling login function
-require 'routes/home.php';  // Handling login function
+require 'routes/home.php';  // Handling main menu
+require 'routes/signing.php';  // Handling document signing list
+require 'routes/project.php';  // Handling project list
 
 //Config
 $addressfile = 'config/address.json';

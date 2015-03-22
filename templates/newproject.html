@@ -1,0 +1,98 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+<div class="container">
+	<div class="row">
+		<input type="hidden" name="count" value="1" />
+        <div class="control-group" id="fields">
+            <div class="controls" id="profs"> 
+                <form class="input-append" role="form" name="newproject" action="tesform" method="post">
+                    <div id="field">
+                    	
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Project Name</label>
+				    <div class="col-xs-10">
+				    <input type="text" class="form-control" id="projectname" name="projectname" placeholder=""></div>
+				    </div>
+				    
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Client ID Number</label>
+				    <div class="col-xs-10">
+					<input type="text" class="form-control" id="clientid" name="clientid" placeholder="">
+					<div class="btn-container"><button type="button" class="btn btn-primary verifyclient-btn" >Check Initial</button></div>
+				    </div>
+
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Milestone</label>
+				    <div class="col-xs-10">
+                    <input class="input form-control" id="field1" name="prof1" type="text" data-items="8"/><button id="b1" class="btn add-more" type="button">+</button></div>
+                    </div>
+                    
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+            <br>
+            </div>
+        </div>
+	</div>
+</div>
+
+<script type="text/javascript">
+$(document).on("click",".verifyclient-btn",function(){
+	$.ajax(
+		{
+			url: "newproject/getinitial",
+			type: "POST",
+    
+            data: {"userid": document.forms["newproject"]["clientid"].value},
+            success: function (result) {
+            	alert(result);
+            }
+		});
+});
+
+$(document).ready(function(){
+    var next = 1;
+    $(".add-more").click(function(e){
+        e.preventDefault();
+        var addto = "#field" + next;
+        var addRemove = "#field" + (next);
+        next = next + 1;
+        var newIn = '<input autocomplete="off" class="input form-control" id="field' + next + '" name="field' + next + '" type="text">';
+        var newInput = $(newIn);
+        var removeBtn = '<button id="remove' + (next - 1) + '" class="btn btn-danger remove-me" >-</button></div><div id="field">';
+        var removeButton = $(removeBtn);
+        $(addto).after(newInput);
+        $(addRemove).after(removeButton);
+        $("#field" + next).attr('data-source',$(addto).attr('data-source'));
+        $("#count").val(next);  
+        
+            $('.remove-me').click(function(e){
+                e.preventDefault();
+                var fieldNum = this.id.charAt(this.id.length-1);
+                var fieldID = "#field" + fieldNum;
+                $(this).remove();
+                $(fieldID).remove();
+            });
+    }); });
+</script>
+
+{% endblock %}

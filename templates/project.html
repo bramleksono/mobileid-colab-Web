@@ -1,0 +1,52 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+       <a href="newproject" class="btn btn-default btn-sm"><b> Create New Project</b></a>
+	   <div class="row">
+            <table id="example" class="table" table-hover>
+				<thead>
+					<tr>
+						<th>
+							#
+						</th>
+						<th>
+							Project Name
+						</th>
+						<th>
+							Milestone
+						</th>
+						<th>
+							Latest Modified
+						</th>
+						<th>
+							Status
+						</th>
+					</tr>
+				</thead>
+				<tbody class="rowlink">                                    
+                    <tr class="primary"><td>1</td><td><a href="foo.html">SURAT PERJANJIAN KERJASAMA.pdf</td><td>Design Offering</td><td>2014-11-14 04:05:04</td><td>Design in progress</td><td>							
+				</tbody>
+			</table>
+              
+              <hr>
+       </div><!--/row-->
+       
+{% endblock %}

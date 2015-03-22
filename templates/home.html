@@ -1,0 +1,30 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+            
+       <hr>
+      
+	   <div class="row">
+            <!-- center left-->	
+			  <p class="navbar-text">{{ subheading }}</p>
+              
+              <hr>
+       </div><!--/row-->
+       
+{% endblock %}
