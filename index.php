@@ -41,6 +41,7 @@ $addressfile = 'config/address.json';
 //Lib
 require 'lib/addstruct.php';  // Construct client address
 require 'lib/sending.php';  // Handling sending http request function
+require 'lib/WebController.class.php';  // Web Controller
 
 //Routes
 require 'routes/login.php';  // Handling login function
@@ -51,5 +52,9 @@ require 'routes/project.php';  // Handling project list
 
 //Config
 $addressfile = 'config/address.json';
+global $Webaddr;
+
+//set static address
+$twig->addGlobal('WebAddr', $Webaddr);
 
 $app->run();
