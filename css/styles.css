@@ -36,3 +36,7 @@ h1 {
   margin-bottom:20px;
   background-color: #110022;
 }  
+
+.row-fluid {
+    word-wrap: break-word;
+}

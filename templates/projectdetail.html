@@ -1,0 +1,46 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+       {{ headingcontent | raw }}
+       
+       <h3>Milestone</h2>
+       <div class="panel-group" id="accordion">
+       {{ milestonecontent | raw }}	    
+       
+		<form class="input-append" role="form" name="newdocument" action="{{ WebAddr }}/document/create" method="post">
+		<input type="hidden" name="projectname" id="projectname" value="{{ projectname }}" />
+		<input type="hidden" name="projectnumber" id="projectnumber" value="{{ projectnumber }}" />
+		<input type="hidden" name="currentmilestone" id="currentmilestone" value="{{ currentmilestone }}" />
+		<input type="hidden" name="milestonenumber" id="milestonenumber" value="{{ milestonenumber }}" />
+		<button type="submit" class="btn btn-default btn-sm"><b>Create Document</b></button></form>
+
+		<hr>
+	   
+	   {{ milestonedropdown | raw }}
+	   
+		<hr>
+		
+		<form class="input-append" role="form" name="nextmilestone" action="{{ WebAddr }}/project/next" method="post">
+		<input type="hidden" name="projectnumber" id="projectnumber" value="{{ projectnumber }}" />
+		<button type="submit" class="btn btn-default btn-sm"><b>Continue to Next Milestone >></b></button></form>
+		
+		<hr>
+{% endblock %}

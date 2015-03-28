@@ -1,0 +1,75 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+<div class="container">
+	<div class="row">
+		<input type="hidden" name="count" value="1" />
+        <div class="control-group" id="fields">
+            <div class="controls" id="profs"> 
+                <form class="input-append" role="form" name="newproject" action="{{ WebAddr }}/document/process" method="post" enctype="multipart/form-data">
+                    <div id="field">
+                    	
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Project Name</label>
+				    <div class="col-xs-10">
+				    <p><b> {{ projectname }}</b></p></div>
+				    <input type="hidden" name="projectnumber" id="projectnumber" value="{{ projectnumber }}" />
+				    </div>
+
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Milestone</label>
+				    <div class="col-xs-10">
+				    <p><b> {{ currentmilestone }}</b></p></div>
+				    <input type="hidden" name="currentmilestone" id="currentmilestone" value="{{ currentmilestone }}" />
+				    <input type="hidden" name="milestonenumber" id="milestonenumber" value="{{ milestonenumber }}" />
+				    </div>
+				    
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Document Name</label>
+				    <div class="col-xs-10">
+					<input type="text" class="form-control" id="documentname" name="documentname" placeholder=""></div>
+				    </div>
+
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Description</label>
+				    <div class="col-xs-10">
+					<input type="text" class="form-control" id="description" name="description" placeholder=""></div>
+				    </div>
+				    
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Signer</label>
+				    <div class="col-xs-10">
+					<select class="form-control" id="signer" name="signer">
+                        <option value="creator">Creator</option>
+                        <option value="client">Client</option>
+                    </select></div>
+				    </div>
+                    
+                    </div>
+                    <ol class="breadcrumb">Please choose a file <b>(10 MB Max)</b> : <input type="file" name="uploadFile"><br><input type="submit" value="Upload File"></ol>
+                </form>
+            <br>
+            </div>
+        </div>
+	</div>
+</div>
+
+{% endblock %}

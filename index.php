@@ -41,7 +41,9 @@ $addressfile = 'config/address.json';
 //Lib
 require 'lib/addstruct.php';  // Construct client address
 require 'lib/sending.php';  // Handling sending http request function
+require 'lib/crypt.php';  // Handling cryptographic function
 require 'lib/WebController.class.php';  // Web Controller
+require 'lib/WebDocument.class.php';  // Web Controller
 
 //Routes
 require 'routes/login.php';  // Handling login function
@@ -49,6 +51,7 @@ require 'routes/session.php';  // Handling login function
 require 'routes/home.php';  // Handling main menu
 require 'routes/signing.php';  // Handling document signing list
 require 'routes/project.php';  // Handling project list
+require 'routes/document.php';  // Handling project list
 
 //Config
 $addressfile = 'config/address.json';

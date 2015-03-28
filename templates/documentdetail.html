@@ -1,0 +1,62 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+       {{ headingcontent | raw }}
+       
+       <h3>Signature</h2>
+       
+       {{ signingcontent | raw }}
+       
+		<hr>
+		<script>
+		$(document).on('click','.docsign-btn',function(){
+		    $.ajax(
+		    {
+		        url: '{{ WebAddr }}/signing/document',
+		        type: "POST",
+		
+		        data: {"documentnumber": "{{ documentnumber }}","projectname": "{{ projectname }}","signerid": "{{ signerid }}","fileurl":"{{ fileurl }}",
+		        		"filehash":"{{ filehash }}","documentname":"{{ documentname }}","description":"{{ description }}","callback":"{{ callback }}"},
+		        success: function (result) {
+					 alert(result);
+		            // result = jQuery.parseJSON(result);
+		            // $('.debug-container').html(result.status);
+		        }
+		    });
+		});	
+		
+		$(document).on('click','.docverify-btn',function(){
+		    $.ajax(
+		    {
+		        url: '{{ WebAddr }}/signing/verifydocument',
+		        type: "POST",
+		
+		        data: {"signedhash": "{{ signedhash }}","signedtime": "{{ signedtime }}","signature": "{{ signature }}","signerid":"{{ signerid }}"},
+		        success: function (result) {
+					 alert(result);
+		            // result = jQuery.parseJSON(result);
+		            // $('.debug-container').html(result.status);
+		        }
+		    });
+		});				
+		</script>
+		
+{% endblock %}

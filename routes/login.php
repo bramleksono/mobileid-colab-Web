@@ -16,7 +16,7 @@ $app->get('/login', function () use($app,$twig) {
 		$login = array_merge($login, $alert);
 	}
 	
-    echo $twig->render('login.tmpl',$login);
+    echo $twig->render('login.html',$login);
 });
 
 $app->post('/process', function () use ($app, $twig) {
@@ -56,7 +56,7 @@ $app->post('/process', function () use ($app, $twig) {
 		$filepath = "./data/PID/".$loginreq;		
 		file_put_contents($filepath,"Waiting..");
 		
-		echo $twig->render('wait.tmpl',$login );
+		echo $twig->render('wait.html',$login );
 	}
 });
 

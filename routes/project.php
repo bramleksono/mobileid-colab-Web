@@ -36,7 +36,7 @@ $app->get('/project', function () use($app,$twig) {
 	}
 	if ($clientcontent == "") {
 		$clientstatus = false;
-	}	
+	}
 	if (($creatorstatus == false) && ($clientstatus == false)) {
 		$emptystatus = true;
 	}
@@ -55,8 +55,18 @@ $app->get('/project', function () use($app,$twig) {
 		'creatorcontent' => $creatorcontent,
 		'clientcontent' => $clientcontent
 	);
+
+	if (isset($_SESSION['slim.flash']['error'])) {
+		$alert=array('alert' => $_SESSION['slim.flash']['error']);
+		$display = array_merge($display, $alert);
+	}
+
+	if (isset($_SESSION['slim.flash']['info'])) {
+		$alert=array('info' => $_SESSION['slim.flash']['info']);
+		$display = array_merge($display, $alert);
+	}
 	
-	echo $twig->render('project.html',$display);
+	echo $twig->render('projectlist.html',$display);
 });
 
 $app->get('/newproject', function () use($app,$twig) {
@@ -84,34 +94,12 @@ $app->get('/newproject', function () use($app,$twig) {
 	);
 	
 	echo $twig->render('newproject.html',$display);
-	
 });
 
 $app->post('/newproject/getinitial', function () {
-	global $CAuserinitial;
-	
 	$idnumber = $_POST["userid"];
-	
-	if ($idnumber == "") {
-		echo "Failed. Reason : You must provide ID Number";
-		die();
-	}
-	
-	$form = array ("userinfo" => array ("nik" => $idnumber));
-	$form = json_encode($form);
-	
-	$result = sendjson($form,$CAuserinitial);
-	$result = json_decode($result, true);
-	if ($result) {
-		if ($result["success"]) {
-			echo "CA Initial Check".PHP_EOL;
-			echo "ID Number " . $idnumber . " with initial " . $result["initial"];			
-		} else {
-			echo "CA Initial Check".PHP_EOL;
-			echo "Failed. Reason : ".$result["reason"];
-		}
-	} else 
-		echo "Failed. Reason : Cannot connect to CA";
+	$controller = new WebController($idnumber);
+	$controller->getInitial($idnumber);
 });
 
 $app->post('/newproject/create', function () use($app,$twig) {
@@ -145,7 +133,6 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	
 	$form = array(	"creator" => $idnumber, "projectname" => $projectname, "client" => $clientid, "milestone" => $stack);
 	
-	//send to controller
 	$controller = new WebController($idnumber);
 	$result = $controller->createProject($form);
 
@@ -154,10 +141,100 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	} else {
 		echo "Cannot save to database";
 	}
-	
-	//echo "Total Milestone = ".count($stack);
 });
 
 $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
-	echo $projectnumber;
+	
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: ./");
+        die();
+    }
+    */
+    
+	$idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+    
+    $controller = new WebController($idnumber);
+    $project = $controller->unparsedProject($projectnumber);
+	$result = $controller->parseProject($project);
+	$role = $controller->checkRole($result, $idnumber);
+	
+	$roletext ="";
+	switch ($role) {
+		case 1:
+			$roletext = "as Creator";
+			break;
+		case 2:
+			$roletext = "as Client";
+			break;
+	}
+	
+	$header = '<p><b>Project Name : '.$result["projectname"].'</b></p><p><b>Creator : '.$result["creator"].'</b></p><p><b>Client : '.$result["client"].'</b></p><p><b>Current Milestone : '.$result["currentmilestone"].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
+	
+	//search document
+	$documentstructure = $controller->getDocumentsfromProject($project);
+	
+	$milestonedropdown ='';
+	$milestonenumber = $result["milestonenumber"];
+	$milestone = $result["milestone"];
+	for ($i = $milestonenumber-1; $i >= 0; $i--) {
+		if (!isset($documentstructure[$i])) {
+    		$documentstructure[$i] = "<b>No Document Created</b>";
+    	}
+	    $milestonedropdown = 	$milestonedropdown.
+	    						'<div class="panel panel-default">
+	    							<div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse'.$i.'">'.$milestone[$i].'</a></h4>
+	          						</div>
+	          						<div id="collapse'.$i.'" class="panel-collapse">
+	            						<div class="panel-body">'.
+										$documentstructure[$i].
+	            						'</div>
+	            					</div>
+	            				</div>';
+	}
+	
+	$display=array(
+		'pagetitle' => 'Project List - MobileID Web',
+	    'heading' => 'Project Detail '. $roletext,
+	    'username' => $username,
+	    'idnumber' => $idnumber,
+	    'headingcontent' => $header,
+	    'projectname' => $result["projectname"],
+	    'projectnumber' => $projectnumber,
+	    'currentmilestone' => $result["currentmilestone"],
+	    'milestonenumber' => $milestonenumber,
+		'license' => 'Mobile ID Web Application',
+		'milestonedropdown' => $milestonedropdown,
+		'year' => '2015',
+		'author' => 'Bramanto Leksono',
+	);
+	
+	echo $twig->render('projectdetail.html',$display);
+	
+});
+
+$app->post('/project/next', function () use($app) {
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        $app->redirect('/');
+        die();
+    }
+    */
+    
+	$idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+    
+    $projectnumber = $_POST["projectnumber"];
+	$controller = new WebController($idnumber);
+	$project = $controller->nextMilestone($projectnumber);
+	$app->redirect('/project');
 });

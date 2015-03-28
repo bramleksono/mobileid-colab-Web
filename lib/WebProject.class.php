@@ -5,20 +5,48 @@ use Parse\ParseObject;
 use Parse\ParseQuery;
 
 class WebProject {
-	public function fetchCreatorDB($creatorid) {
-	    $web_project_que = new ParseQuery("web_project");
-    	$web_project_que->equalTo("creator", $creatorid);
+	private function searchWebDB($column, $query) {
+		$web_project_que = new ParseQuery("web_project");
+    	$web_project_que->equalTo($column, $query);
     	$results = $web_project_que->find();
+    	return $results;
+	}
+
+	private function searchOneDB($column, $query) {
+		$web_project_que = new ParseQuery("web_project");
+    	$web_project_que->equalTo($column, $query);
+    	$results = $web_project_que->first();
+    	return $results;
+	}
+	
+	public function fetchCreatorDB($idnumber) {
+		$results = $this->searchWebDB("creator", $idnumber);
     	$this->creator = $results;
     	return count($results);
 	}
 
-	public function fetchClientDB($creatorid) {
-	    $web_project_que = new ParseQuery("web_project");
-    	$web_project_que->equalTo("client", $creatorid);
-    	$results = $web_project_que->find();
+	public function fetchClientDB($idnumber) {
+		$results = $this->searchWebDB("client", $idnumber);
     	$this->client = $results;
     	return count($results);
+	}
+	
+	public function fetchProjectDB($projectnumber) {
+	    $results = $this->searchOneDB("projectnumber", $projectnumber);
+    	if ($results) {
+    		return $results;
+    	} else {
+    		return null;
+    	}
+	}
+	
+	public function getProject($project) {
+		$query = new ParseQuery("web_project");
+		try {
+		  $result = $query->get($project);
+		  return $result;
+		} catch (ParseException $ex) {
+		}
 	}
 	
 	public function storeProjectDB($form,$currentmilestone) {
@@ -30,7 +58,7 @@ class WebProject {
 		$web_project_obj->set("projectname", $form["projectname"]);
 		$web_project_obj->set("client", $form["client"]);
 		$web_project_obj->set("milestone", $form["milestone"]);
-		$web_project_obj->set("currentmilestone", $currentmilestone);
+		$web_project_obj->set("currentmilestone", strval($currentmilestone));
 		$web_project_obj->set("modified", $time);
     	
     	try {
