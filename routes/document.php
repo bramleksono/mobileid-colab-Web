@@ -1,7 +1,52 @@
 <?php
 
+$app->get('/document', function () use($app,$twig) {
+	
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: ./");
+        die();
+    }
+    */
+    
+	$idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+	
+	$controller = new WebController($idnumber);
+	$list = $controller->showDocument();
+	
+	$documentcontent = $list["signerdocument"];
+	
+	$emptystatus = false;
+
+	//logic to show project list
+	if (!$documentcontent) {
+		$emptystatus = true;
+	}
+	
+	$display=array(
+		'pagetitle' => 'Project List - MobileID Web',
+	    'heading' => 'Project List',
+	    'username' => $username,
+	    'idnumber' => $idnumber,
+		'license' => 'Mobile ID Web Application',
+		'year' => '2015',
+		'author' => 'Bramanto Leksono',
+		'empty' => $emptystatus,
+		'documentcontent' => $documentcontent
+	);
+
+	echo $twig->render('documentlist.html',$display);
+});
+
+
 $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
     global $Webdocumentreceive;
+    global $Webaddr;
     
     //echo $documentnumber;
     /*
@@ -30,7 +75,8 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
     $fileurl = $result["originalfile"]->getURL();
     
     //construct document info
-    $header = '<p><b>Project Name : '.$projectname.'</b></p><p><b>Creator : '.$result["creator"].'</b></p><p><b>Signer : '.$result["signer"].'</b></p><p><b>Milestone : '.$milestone[$milestonenumber-1].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
+    $projectadrress = $Webaddr."/project/".$projectnumber;
+    $header = '<a href="'.$projectadrress.'"><p><b>Project Name : '.$projectname.'</b></p></a><p><b>Creator : '.$result["creator"].'</b></p><p><b>Signer : '.$result["signer"].'</b></p><p><b>Milestone : '.$milestone[$milestonenumber-1].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
     $header = $header.'<p><b>Document Name : '.$result["documentname"].'</b></p><p><b>Document Description : '.$result["description"].'</b></p><p><b>Original Document Hash : '.$result["originalhash"].'</b></p><a href="'.$fileurl.'" target="_blank" class="btn btn-default btn-sm"><b>Download Document</b></a></p>';
     
     $signingmenu = "";

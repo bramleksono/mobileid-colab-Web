@@ -99,6 +99,10 @@ class WebDocument {
         
         return $data;
     }
+
+    public function findDocumentsbysigner($idnumber) {
+        return $this->searchWebDocumentDB("signer", $idnumber);;
+    }
     
     public function findDocumentsbyproject($project) {
         return $this->searchWebDocumentDB("project", $project);;

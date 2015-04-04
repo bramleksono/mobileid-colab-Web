@@ -162,6 +162,48 @@ class WebController {
             return 0;
         }        
     }    
+
+    public function showDocument() {
+        $idnumber = $this->idnumber;
+        $documentcontroller = new WebDocument();
+        
+        //get list as creator
+        $documents = $documentcontroller->findDocumentsbysigner($idnumber);
+        
+        $signercount = count($documents);
+        
+        $signertext = '';
+        if ($signercount > 0) {            
+            $i = 1;
+            
+            foreach ($documents as $list) {
+                //to be showed: creator, document name, project name, latest modified
+                $documentnumber = $list->get('documentnumber');
+                $creator = $list->get('creator');
+                $documentname = $list->get('documentname');
+                
+                $projectobj = $list->get('project');
+                $projectdetail = $documentcontroller->getProject($projectobj);
+                $projectname = $projectdetail->get('projectname');
+                
+                $modified = $list->get('modified');
+                
+                //to change row color
+                $signature = $list->get('signature');
+                if (!isset($signature)) {
+                    $rowcolor = "primary";
+                } else {
+                    $rowcolor = "success";
+                }
+                
+                $signertext = $signertext.'<tr class="'.$rowcolor.'"><td>'.$i.'</td><td>'.$creator.'</td><td><a href="document/'.$documentnumber.'">'.$documentname.'</td><td>'.$projectname.'</td><td>'.$modified.'</td><td>';
+                $i++;
+            }
+        }
+        
+        $data = array(  "signerdocument" => $signertext);
+        return $data;
+    }
     
     public function getDocumentsfromProject($project) {
         global $Webaddr;

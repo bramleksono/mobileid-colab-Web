@@ -1,9 +1,5 @@
 <?php
 
-//Parse Backend
-use Parse\ParseObject;
-use Parse\ParseQuery;
-
 $app->get('/project', function () use($app,$twig) {
 	
     /*
