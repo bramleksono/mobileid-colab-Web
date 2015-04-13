@@ -31,3 +31,4 @@ $SIdocumentconfirm = $SIaddr."/document/confirm";
 $Webaddr = $clientaddr->Web;
 $Webloginconfirm = $Webaddr."/process/confirm";
 $Webdocumentreceive = $Webaddr."/document/receive";
+$Webverifyconfirm = $Webaddr."/verify/confirm";

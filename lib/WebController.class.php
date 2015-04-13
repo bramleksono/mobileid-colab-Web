@@ -12,7 +12,11 @@ class WebController {
      	$projectname = $project->get('projectname');
         $projectnumber = $project->get('projectnumber');
         $creator = $project->get('creator');
+        $creatorapproval = $project->get('creatorapproval');
+        $creatoridentity = $project->get('creatoridentity');
         $client = $project->get('client');
+        $clientapproval = $project->get('clientapproval');
+        $clientidentity = $project->get('clientidentity');
         $modified = $project->get('modified');
     	$milestone = json_decode($project->get('milestone'), true);
     	$milestonenumber = $project->get('currentmilestone');
@@ -21,7 +25,11 @@ class WebController {
         $data = array(  "projectname" => $projectname,
                         "projectnumber" =>$projectnumber,
                         "creator" =>$creator,
+                        "creatorapproval" =>$creatorapproval,
+                        "creatoridentity" =>$creatoridentity,
                         "client" =>$client,
+                        "clientapproval" =>$clientapproval,
+                        "clientidentity" =>$clientidentity,
                         "modified" =>$modified,
                         "currentmilestone" =>$currentmilestone,
                         "milestonenumber" => $milestonenumber,
@@ -147,6 +155,22 @@ class WebController {
         }        
     }
     
+    public function getApproval($project) {
+        //check if project has creator and client approval
+        $creatorapproval = $project["creatorapproval"];
+        $clientapproval = $project["clientapproval"];
+        if (($creatorapproval) && ($clientapproval)) {
+            $approved = 1;
+        } else {
+            //illegal user
+            $approved = 0;
+        }
+        
+        $creatoridentity = $project["creatoridentity"];   
+        $clientidentity = $project["clientidentity"]; 
+        return array($approved, $creatorapproval, $clientapproval, $creatoridentity, $clientidentity);
+    }
+    
     public function setIDNumberbyRole($project, $role) {
         $project = $this->parseProject($project);
         
@@ -225,7 +249,20 @@ class WebController {
     			$documentstructure[$currentmilestone] = "";
     		}
     		//concatenate result
-    		$documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. '<a href="'.$documentaddress.'"><h4>'.$documentname.'</h4></a>';
+    		//$documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. '<a href="'.$documentaddress.'"><h4>'.$documentname.'</h4></a>';
+            $documentstructure[$currentmilestone] = '
+                      <tr>
+                        <td>1</td>
+                        <td><a href="http://t3box-160161.apse1.nitrousbox.com:8000/document/1f7388c22e25a800bae591dd3380980a">Michael</a></a></td>
+                        <td>Original Document</td>
+                        <td>Sign</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td><a href="http://t3box-160161.apse1.nitrousbox.com:8000/document/1f7388c22e25a800bae591dd3380980a">Jake</a></td>
+                        <td>Signed Document</td>
+                        <td>Sign</td>
+                      </tr>';
     	}
     	
     	return $documentstructure;

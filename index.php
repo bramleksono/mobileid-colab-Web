@@ -2,6 +2,7 @@
 //Aplikasi Mobile ID - Web untuk kolaborasi internet.
 
 require 'vendor/autoload.php';
+date_default_timezone_set("Asia/Jakarta");
 
 //twig init
 $loader = new Twig_Loader_Filesystem('templates');
@@ -47,8 +48,9 @@ require 'lib/WebDocument.class.php';  // Web Controller
 
 //Routes
 require 'routes/login.php';  // Handling login function
-require 'routes/session.php';  // Handling login function
+require 'routes/session.php';  // Handling session function
 require 'routes/home.php';  // Handling main menu
+require 'routes/verify.php';  // Handling verify function
 require 'routes/signing.php';  // Handling document signing list
 require 'routes/project.php';  // Handling project list
 require 'routes/document.php';  // Handling project list

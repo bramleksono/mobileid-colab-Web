@@ -140,7 +140,7 @@ $app->post('/newproject/create', function () use($app,$twig) {
 });
 
 $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
-	
+	header('Access-Control-Allow-Origin: *');  
     /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
@@ -170,48 +170,132 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
 			break;
 	}
 	
-	$header = '<p><b>Project Name : '.$result["projectname"].'</b></p><p><b>Creator : '.$result["creator"].'</b></p><p><b>Client : '.$result["client"].'</b></p><p><b>Current Milestone : '.$result["currentmilestone"].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
-	
-	//search document
-	$documentstructure = $controller->getDocumentsfromProject($project);
-	
-	$milestonedropdown ='';
-	$milestonenumber = $result["milestonenumber"];
-	$milestone = $result["milestone"];
-	for ($i = $milestonenumber-1; $i >= 0; $i--) {
-		if (!isset($documentstructure[$i])) {
-    		$documentstructure[$i] = "<b>No Document Created</b>";
-    	}
-	    $milestonedropdown = 	$milestonedropdown.
-	    						'<div class="panel panel-default">
-	    							<div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse'.$i.'">'.$milestone[$i].'</a></h4>
-	          						</div>
-	          						<div id="collapse'.$i.'" class="panel-collapse">
-	            						<div class="panel-body">'.
-										$documentstructure[$i].
-	            						'</div>
-	            					</div>
-	            				</div>';
-	}
-	
-	$display=array(
-		'pagetitle' => 'Project List - MobileID Web',
-	    'heading' => 'Project Detail '. $roletext,
-	    'username' => $username,
-	    'idnumber' => $idnumber,
-	    'headingcontent' => $header,
-	    'projectname' => $result["projectname"],
-	    'projectnumber' => $projectnumber,
-	    'currentmilestone' => $result["currentmilestone"],
-	    'milestonenumber' => $milestonenumber,
-		'license' => 'Mobile ID Web Application',
-		'milestonedropdown' => $milestonedropdown,
-		'year' => '2015',
-		'author' => 'Bramanto Leksono',
-	);
-	
-	echo $twig->render('projectdetail.html',$display);
-	
+    $approval = $controller->getApproval($result);
+    
+    $header = '<p><b>Project Name : '.$result["projectname"].'</b></p><p><b>Creator : '.$result["creator"].'</b></p><p><b>Client : '.$result["client"].'</b></p><p><b>Current Milestone : '.$result["currentmilestone"].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
+    
+    if ($approval[0]) {
+        // show project structure
+        //search document
+        $documentstructure = $controller->getDocumentsfromProject($project);
+        
+        $milestonedropdown ='';
+        $milestonenumber = $result["milestonenumber"];
+        $milestone = $result["milestone"];
+        for ($i = $milestonenumber-1; $i >= 0; $i--) {
+            if (!isset($documentstructure[$i])) {
+                $documentstructure[$i] = "<b>No Document Created</b>";
+            }
+            $milestonedropdown = 	$milestonedropdown.
+                                    '<div class="panel panel-default">
+                                        <div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse'.$i.'">'.$milestone[$i].'</a></h4>
+                                        </div>
+                                        <div id="collapse'.$i.'" class="panel-collapse">
+                                        <div class="panel-body">
+                                          <table class="table">
+                                            <thead>
+                                              <tr>
+                                                <th>#</th>
+                                                <th>Document Name</th>
+                                                <th>Download</th>
+                                                <th>Signature</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>'.
+                                            $documentstructure[$i].
+                                            '</tbody>
+                                            </table>
+                                            </div>
+                                        </div>
+                                    </div>';
+        }
+        
+        $display=array(
+            'pagetitle' => 'Project List - MobileID Web',
+            'heading' => 'Project Detail '. $roletext,
+            'username' => $username,
+            'idnumber' => $idnumber,
+            'headingcontent' => $header,
+            'projectname' => $result["projectname"],
+            'projectnumber' => $projectnumber,
+            'currentmilestone' => $result["currentmilestone"],
+            'milestonenumber' => $milestonenumber,
+            'license' => 'Mobile ID Web Application',
+            'milestonedropdown' => $milestonedropdown,
+            'year' => '2015',
+            'author' => 'Bramanto Leksono',
+        );
+
+        echo $twig->render('projectdetail.html',$display);       
+        
+    } else {
+        // show approval menu
+        $form = '';
+        for ($user = 0; $user <= 1; $user++) {
+            if ($user == 0) {
+                $approvaloffset = 1;
+                $identityoffset = 3;
+                $form[$user] =     '<td>Creator</td>
+                                    <td>'.$result["creator"].'</td>
+                                    <td><button id="clickMe" class="btn btn-default" type="button" value="'. $result["creator"].'" onclick="';
+            } else if ($user == 1) {
+                $approvaloffset = 2;
+                $identityoffset = 4;
+                $form[$user] =     '<td>Client</td>
+                                    <td>'.$result["client"].'</td>
+                                    <td><button id="clickMe" class="btn btn-default" type="button" value="'. $result["client"].'" onclick="';
+            }
+            
+            //identity viewer
+            if ($approval[$identityoffset]) {
+                $form[$user] = $form[$user]. 'viewidentity(this);">View</button></td>';
+            } else {
+                $form[$user] = $form[$user]. 'sendidentityreq(this);">Resend Request</button></td>';
+            }
+            
+            //approval status
+            if ($approval[$approvaloffset]) {
+                $form[$user] = $form[$user]. '<td>Approved</td>';
+            } else {
+                $form[$user] = $form[$user]. '<td>Empty Approval</td>';
+            }
+        }
+        
+        $showapprovalbutton = true;
+        //check if user already approved
+        switch ($role) {
+            case 1:
+                if ($approval[1]) {
+                    $showapprovalbutton = false;
+                }
+                break;
+            case 2:
+                if ($approval[2]) {
+                    $showapprovalbutton = false;
+                }
+                break;
+        }
+        
+        $display=array(
+            'pagetitle' => 'Project List - MobileID Web',
+            'heading' => 'Project Detail '. $roletext,
+            'username' => $username,
+            'idnumber' => $idnumber,
+            'headingcontent' => $header,
+            'projectname' => $result["projectname"],
+            'projectnumber' => $projectnumber,
+            'creatorcontent' => $form[0],
+            'clientcontent' => $form[1],
+            'approval' => $showapprovalbutton,
+            'currentmilestone' => $result["currentmilestone"],
+            'milestonenumber' => $milestonenumber,
+            'license' => 'Mobile ID Web Application',
+            'year' => '2015',
+            'author' => 'Bramanto Leksono',
+        );
+        
+        echo $twig->render('projectapproval.html',$display);           
+    }
 });
 
 $app->post('/project/next', function () use($app) {
@@ -233,4 +317,42 @@ $app->post('/project/next', function () use($app) {
 	$controller = new WebController($idnumber);
 	$project = $controller->nextMilestone($projectnumber);
 	$app->redirect('/project');
+});
+
+$app->post('/project/confirm', function () use($app) {
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        $app->redirect('/');
+        die();
+    }
+    */
+    
+	$idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+    
+    $projectnumber = $_POST["projectnumber"];
+    $controller = new WebController($idnumber);
+    $project = $controller->unparsedProject($projectnumber);
+	$result = $controller->parseProject($project);
+	$role = $controller->checkRole($result, $idnumber);
+	
+	$roletext ="";
+	switch ($role) {
+		case 1:
+			$roletext = "creatoridentity";
+			break;
+		case 2:
+			$roletext = "clientidentity";
+			break;
+	}
+    
+    $value = "1";
+    $project->set($roletext, $value);
+    $project->save();
+    
+	$app->redirect('/project/'.$projectnumber);
 });

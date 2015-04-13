@@ -1,0 +1,105 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+       {{ headingcontent | raw }}
+       
+       <h3>Verify Identity</h2>
+       <div class="panel-group" id="accordion">
+       
+       <div class="panel panel-default">
+         <div class="panel-heading">
+           <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse0">Identity</a></h4>
+         </div>
+         <div id="collapse0" class="panel-collapse">
+           <div class="panel-body">
+             <table class="table">
+               <thead>
+                 <tr>
+                   <th>Role</th>
+                   <th>ID Number</th>
+                   <th>Identity</th>
+                   <th>Status</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 <tr>
+                     {{ creatorcontent | raw }}
+                 </tr>
+                 <tr>
+                     {{ clientcontent | raw }}
+                 </tr>
+               </tbody>
+             </table>
+           </div>
+         </div>
+        </div>
+	    <hr>
+		
+        {% if approval %}
+        
+        <form class="input-append" role="form" name="nextmilestone" action="http://t3box-160161.apse1.nitrousbox.com:8000/project/confirm" method="post">
+        <input type="hidden" name="projectnumber" id="projectnumber" value="6d0bacf1d26dd6fbc277cb24b3004973">
+        <button type="submit" class="btn btn-default btn-sm">
+        <b>Approve &gt;&gt;</b>
+        </button>
+        </form>
+		
+		<hr>
+        {% endif %}
+        
+        <script>
+        var projectnumber = "{{projectnumber}}";
+        
+        function viewidentity(idbutton) {
+            var idnumber = idbutton.value;
+		    $.ajax(
+		    {
+		        url: '{{ WebAddr }}/verify/view',
+		        type: "POST",
+		
+		        data: "idnumber="+idnumber+"&projectid="+projectnumber,
+		        success: function (result) {
+					 alert(result);
+		            // result = jQuery.parseJSON(result);
+		            // $('.debug-container').html(result.status);
+		        }
+		    });
+        }
+        
+        function sendidentityreq(idbutton) {
+            var idnumber = idbutton.value;
+		    $.ajax(
+		    {
+		        url: '{{ WebAddr }}/verify/request',
+		        type: "POST",
+		
+		        data: "idnumber="+idnumber+"&projectid="+projectnumber,
+		        success: function (result) {
+					 alert(result);
+		            // result = jQuery.parseJSON(result);
+		            // $('.debug-container').html(result.status);
+		        }
+		    });
+        }  
+        
+        </script>
+           
+{% endblock %}
