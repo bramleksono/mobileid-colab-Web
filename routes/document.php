@@ -70,6 +70,7 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
     $project = $documentcontroller->getProject($result["project"]);
     $projectname = $project->get('projectname');
     $projectnumber = $project->get('projectnumber');
+    $finishproject = $project->get('finishproject');
     $milestone = json_decode($project->get('milestone'), true);
     $milestonenumber = $result["milestone"];
     $fileurl = $result["originalfile"]->getURL();
@@ -87,9 +88,12 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
         $signingmenu = '<p><b>Signed Hash : '.$result["signedhash"].'</b></p><p><b>Signature : '.$result["signature"].'</b></p><p><b>Signed Time  : '.$result["signedtime"].' WIB</b></p>';
         $signingmenu = $signingmenu. '<a href="'.$signedurl.'" target="_blank" class="btn btn-default btn-sm"><b>Download Signed Document</b></a>  <button class="btn btn-default btn-sm docverify-btn" type="submit"><b>Verify</b></button>';
     } else {
-        //create sign button
+        //if project already finished. hide sign button
         $signingmenu = "Not yet signed";
-        $signingmenu = $signingmenu. '<button class="btn btn-primary docsign-btn" type="submit">Sign</button>';
+        if (!$finishproject) {
+            //create sign button            
+            $signingmenu = $signingmenu. '<br><button class="btn btn-primary docsign-btn" type="submit">Sign</button>';
+        }
     }
     
     $display=array(
@@ -258,4 +262,40 @@ $app->post('/document/receive', function () use($app) {
         //update database
         $result = $documentcontroller->saveSignedDocument($body, $document);
     }
+});
+
+$app->get('/document/remove/:documentnumber', function ($documentnumber) use($app) {
+    global $Webaddr;
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: ./");
+        die();
+    }
+    */
+    
+    $idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+    
+    $documentcontroller = new WebDocument();
+    $document = $documentcontroller->fetchDocumentDB($documentnumber);
+    if ($document) {
+        $creator = $document->get('creator');
+        $signature = $document->get('signature');
+
+        if (($idnumber == $creator) && (!$signature)) {
+            $document->destroy();
+            $app->flash('info', 'Document deleted.');
+        } else {
+            $app->flash('error', 'Document must be removed by creator.');
+            //only creator can delete document
+        }
+    } else {
+        $app->flash('error', 'Document is not exist.');
+    }
+    $app->redirect('/project');
+
 });

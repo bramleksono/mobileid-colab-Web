@@ -1,7 +1,6 @@
 <?php
 
 $app->get('/home', function () use($app,$twig) {
-	/*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -10,10 +9,6 @@ $app->get('/home', function () use($app,$twig) {
         header("Location: ./");
         die();
     }
-	*/
-	
-	$idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
 	$greet = "Welcome, ".$username.". Select menu to get started.";
 	
 	$display=array(

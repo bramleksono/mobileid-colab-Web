@@ -20,6 +20,7 @@ class WebController {
         $modified = $project->get('modified');
     	$milestone = json_decode($project->get('milestone'), true);
     	$milestonenumber = $project->get('currentmilestone');
+        $finishproject = $project->get('finishproject');
 	    $currentmilestone = $milestone[$milestonenumber-1];
 	    
         $data = array(  "projectname" => $projectname,
@@ -34,6 +35,7 @@ class WebController {
                         "currentmilestone" =>$currentmilestone,
                         "milestonenumber" => $milestonenumber,
                         "milestone" =>$milestone,
+                        "finishproject" => $finishproject
                         );
         return $data;
     }
@@ -152,7 +154,7 @@ class WebController {
         } else {
             //illegal user
             return 0;
-        }        
+        }
     }
     
     public function getApproval($project) {
@@ -229,7 +231,7 @@ class WebController {
         return $data;
     }
     
-    public function getDocumentsfromProject($project) {
+    public function getDocumentsfromProject($project, $iscreator, $isfinished) {
         global $Webaddr;
         
         //search document
@@ -238,41 +240,136 @@ class WebController {
     	
     	$documentstructure = array();
     	
+        $iteration=1;
     	foreach ($documentlist as $document) {
     	    $documentnumber =  $document->get('documentnumber');
     		$documentname =  $document->get('documentname');
     		$currentmilestone = $document->get('milestone')-1;
     		$documentaddress = $Webaddr."/document/".$documentnumber;
-    		
+    		$signature =  $document->get('signature');
+            
     		//define array if doesnt exist
     		if (!isset($documentstructure[$currentmilestone])) {
     			$documentstructure[$currentmilestone] = "";
     		}
+            
+            $opendocument = "";
+            $actionbutton = "";
+            $signaturestatus = "";
+            //generate document link
+            if (!$signature) {
+                $signaturestatus = "Not Signed";
+                $doclink =  $document->get('originalfile');
+                $url = $doclink->getURL();
+                $opendocument = '<a class="btn btn-sm btn-default" target="_blank" href="'.$url.'">View</a>';                
+            } else {
+                $signaturestatus = "Signed";
+                $doclink =  $document->get('signedfile');
+                $url = $doclink->getURL();
+                $opendocument = '<a class="btn btn-sm btn-default" target="_blank" href="'.$url.'">View</a>';
+            }
+            
+            $action = "";
+            if ($iscreator && !$isfinished) {
+                $action = '<a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/remove/'.$documentnumber.'">Remove</a>';
+            }
+            
     		//concatenate result
     		//$documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. '<a href="'.$documentaddress.'"><h4>'.$documentname.'</h4></a>';
-            $documentstructure[$currentmilestone] = '
-                      <tr>
-                        <td>1</td>
-                        <td><a href="http://t3box-160161.apse1.nitrousbox.com:8000/document/1f7388c22e25a800bae591dd3380980a">Michael</a></a></td>
-                        <td>Original Document</td>
-                        <td>Sign</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td><a href="http://t3box-160161.apse1.nitrousbox.com:8000/document/1f7388c22e25a800bae591dd3380980a">Jake</a></td>
-                        <td>Signed Document</td>
-                        <td>Sign</td>
+            $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
+                     '<tr>
+                        <td>'.$iteration.'</td>
+                        <td><a href="'.$documentaddress.'">'.$documentname.'</a></a></td>
+                        <td>'.$signaturestatus.'</td>
+                        <td>'.$opendocument.$action.'</td>
                       </tr>';
+            $iteration++;
     	}
     	
     	return $documentstructure;
     }
     
-    public function nextMilestone($projectnumber) {
+    public function nextMilestone($projectnumber, $milestonename) {
         $project = $this->unparsedProject($projectnumber);
+        //increment milestone
     	$milestone = $project->get("currentmilestone");
     	$project->set("currentmilestone", strval($milestone+1));
-    	$project->save();
+        //create milestone name
+        $milestonelist = json_decode($project->get("milestone"));
+    	array_push($milestonelist, $milestonename);
+        $project->set("milestone", json_encode($milestonelist));
+        //save
+        $project->save();
+    }
+
+    public function deleteMilestone($projectnumber) {
+        $project = $this->unparsedProject($projectnumber);
+    	$currentmilestone = $project->get("currentmilestone");
+        
+        if ($currentmilestone == 1) {
+            //cannot remove 1st milestone
+            return 2;
+        } else {
+            //search document
+            $documents = new WebDocument();
+            $documentlist = $documents->findDocumentsbyproject($project);
+
+            $documentcount=0;
+            foreach ($documentlist as $document) {
+                if ($document->get("milestone") == $currentmilestone) {
+                    $documentcount++;
+                }
+            }
+
+            if ($documentcount == 0) {
+    	        $milestonelist = json_decode($project->get("milestone"));
+                unset($milestonelist[$currentmilestone-1]);
+                $milestonelist = array_values($milestonelist);
+                $project->set("milestone", json_encode($milestonelist));
+                $project->set("currentmilestone", strval($currentmilestone-1));
+                $project->save();
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+    
+    public function createMilestone($projectnumber, $milestonename) {
+        $project = $this->unparsedProject($projectnumber);
+    	$currentmilestone = $project->get("currentmilestone");
+        
+        if ($currentmilestone == 1) {
+            //cannot remove 1st milestone
+            return 2;
+        } else {
+            //search document
+            $documents = new WebDocument();
+            $documentlist = $documents->findDocumentsbyproject($project);
+
+            $documentcount=0;
+            foreach ($documentlist as $document) {
+                if ($document->get("milestone") == $currentmilestone) {
+                    $documentcount++;
+                }
+            }
+
+            if ($documentcount == 0) {
+                $project->set("currentmilestone", strval($currentmilestone-1));
+                $project->save();
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+    
+    public function finishProject($projectnumber) {
+        $project = $this->unparsedProject($projectnumber);
+        //set project status
+    	$project->set("finishproject", "1");
+        //save
+        $project->save();
     }
     
     public function verifySignature($request) {

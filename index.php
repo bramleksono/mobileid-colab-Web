@@ -19,9 +19,11 @@ $app = new \Slim\Slim(array(
     'cookies.cipher' => MCRYPT_RIJNDAEL_256,
     'cookies.cipher_mode' => MCRYPT_MODE_CBC
 ));
+
 $app->add(new \Slim\Middleware\SessionCookie(array(
-    'expires' => '20 minutes'
+    'expires' => '2 days'
 )));
+
 
 $app->get('/', function () use ($app) {
 	//TODO: jika sudah login, redirect ke home

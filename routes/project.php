@@ -1,21 +1,20 @@
 <?php
 
 $app->get('/project', function () use($app,$twig) {
-	
+    global $Webaddr;
     /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-	$idnumber = "1231230509890001";
+	*/
+    $idnumber = "1231230509890001";
     $username = "Bramanto Leksono";
-	
+    
 	$controller = new WebController($idnumber);
 	$list = $controller->showProject();
 	
@@ -66,17 +65,19 @@ $app->get('/project', function () use($app,$twig) {
 });
 
 $app->get('/newproject', function () use($app,$twig) {
+    global $Webaddr;
+    
     /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-	$idnumber = "1231230509890001";
+	*/
+    $idnumber = "1231230509890001";
     $username = "Bramanto Leksono";
 	
 	$display=array(
@@ -99,18 +100,19 @@ $app->post('/newproject/getinitial', function () {
 });
 
 $app->post('/newproject/create', function () use($app,$twig) {
+    global $Webaddr;
+    
     /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-
-	$idnumber = "1231230509890001";
+	*/
+    $idnumber = "1231230509890001";
     $username = "Bramanto Leksono";
     
 	$projectname = $_POST["projectname"];
@@ -140,26 +142,26 @@ $app->post('/newproject/create', function () use($app,$twig) {
 });
 
 $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
-	header('Access-Control-Allow-Origin: *');  
+    global $Webaddr;
+    
     /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-	$idnumber = "1231230509890001";
+	*/
+    $idnumber = "1231230509890001";
     $username = "Bramanto Leksono";
     
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);
 	$result = $controller->parseProject($project);
-	$role = $controller->checkRole($result, $idnumber);
-	
+	$role = $controller->checkRole($result, $idnumber);    
+    
 	$roletext ="";
 	switch ($role) {
 		case 1:
@@ -174,10 +176,14 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
     
     $header = '<p><b>Project Name : '.$result["projectname"].'</b></p><p><b>Creator : '.$result["creator"].'</b></p><p><b>Client : '.$result["client"].'</b></p><p><b>Current Milestone : '.$result["currentmilestone"].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
     
+    // check if both party already approve project
     if ($approval[0]) {
         // show project structure
-        //search document
-        $documentstructure = $controller->getDocumentsfromProject($project);
+        $iscreator = false;
+        if ($result["creator"] == $idnumber) {
+            $iscreator = true;
+        }
+        $documentstructure = $controller->getDocumentsfromProject($project, $iscreator, $result["finishproject"]);
         
         $milestonedropdown ='';
         $milestonenumber = $result["milestonenumber"];
@@ -186,22 +192,16 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
             if (!isset($documentstructure[$i])) {
                 $documentstructure[$i] = "<b>No Document Created</b>";
             }
+
             $milestonedropdown = 	$milestonedropdown.
                                     '<div class="panel panel-default">
                                         <div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse'.$i.'">'.$milestone[$i].'</a></h4>
                                         </div>
                                         <div id="collapse'.$i.'" class="panel-collapse">
                                         <div class="panel-body">
-                                          <table class="table">
-                                            <thead>
-                                              <tr>
-                                                <th>#</th>
-                                                <th>Document Name</th>
-                                                <th>Download</th>
-                                                <th>Signature</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>'.
+                                          <table class="table">'.
+                                            //'<thead><tr><th>#</th><th>Document Name</th><th>Status</th><th>Action</th></tr></thead>'.
+                                            '<tbody>'.
                                             $documentstructure[$i].
                                             '</tbody>
                                             </table>
@@ -209,7 +209,7 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
                                         </div>
                                     </div>';
         }
-        
+                
         $display=array(
             'pagetitle' => 'Project List - MobileID Web',
             'heading' => 'Project Detail '. $roletext,
@@ -218,10 +218,12 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
             'headingcontent' => $header,
             'projectname' => $result["projectname"],
             'projectnumber' => $projectnumber,
+            'iscreator' => $iscreator,
             'currentmilestone' => $result["currentmilestone"],
             'milestonenumber' => $milestonenumber,
             'license' => 'Mobile ID Web Application',
             'milestonedropdown' => $milestonedropdown,
+            'finished' => $result["finishproject"],
             'year' => '2015',
             'author' => 'Bramanto Leksono',
         );
@@ -299,40 +301,37 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
 });
 
 $app->post('/project/next', function () use($app) {
+    global $Webaddr;
     /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        $app->redirect('/');
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-	$idnumber = "1231230509890001";
+	*/
+    $idnumber = "1231230509890001";
     $username = "Bramanto Leksono";
     
     $projectnumber = $_POST["projectnumber"];
+    $milestonename = $_POST["milestonename"];
 	$controller = new WebController($idnumber);
-	$project = $controller->nextMilestone($projectnumber);
-	$app->redirect('/project');
+	$project = $controller->nextMilestone($projectnumber, $milestonename);
 });
 
 $app->post('/project/confirm', function () use($app) {
-    /*
+    global $Webaddr;
+    
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        $app->redirect('/');
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-	$idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $projectnumber = $_POST["projectnumber"];
     $controller = new WebController($idnumber);
@@ -343,10 +342,10 @@ $app->post('/project/confirm', function () use($app) {
 	$roletext ="";
 	switch ($role) {
 		case 1:
-			$roletext = "creatoridentity";
+			$roletext = "creatorapproval";
 			break;
 		case 2:
-			$roletext = "clientidentity";
+			$roletext = "clientapproval";
 			break;
 	}
     
@@ -355,4 +354,94 @@ $app->post('/project/confirm', function () use($app) {
     $project->save();
     
 	$app->redirect('/project/'.$projectnumber);
+});
+
+$app->post('/project/milestone/delete', function () use($app) {
+    global $Webaddr;
+    
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+    
+    $projectnumber = $_POST["projectnumber"];
+	$controller = new WebController($idnumber);
+    $result = $controller->deleteMilestone($projectnumber);
+    switch ($result) {
+        case 0:
+            $app->flash('error', 'Cannot delete. Document exist in milestone.');
+            break;
+        case 1:
+            $app->flash('info', 'Milestone deleted.');
+            break;
+        case 2:
+            $app->flash('error', 'Cannot delete. This is the 1st milestone.');
+            break;
+    }
+});
+
+$app->post('/project/milestone/create', function () use($app) {
+    global $Webaddr;
+    
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+	*/
+    $idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+    
+    $projectnumber = $_POST["projectnumber"];
+    $milestonename = $_POST["milestonename"];
+    
+	$controller = new WebController($idnumber);
+    $result = $controller->createMilestone($projectnumber, $milestonename);
+    switch ($result) {
+        case 0:
+            $app->flash('error', 'Cannot delete. Document exist in milestone.');
+            break;
+        case 1:
+            $app->flash('info', 'Milestone deleted.');
+            break;
+    }
+});
+
+$app->post('/project/finish', function () use($app) {
+    global $Webaddr;
+    /*
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+	*/
+    $idnumber = "1231230509890001";
+    $username = "Bramanto Leksono";
+ 
+    $projectnumber = $_POST["projectnumber"];
+	$controller = new WebController($idnumber);
+	
+    $project = $controller->unparsedProject($projectnumber);
+	$result = $controller->parseProject($project);
+	$role = $controller->checkRole($result, $idnumber);
+    
+    if ($role == 1) {
+        $project = $controller->finishProject($projectnumber);
+        $app->flash('info', 'Project ended');
+        echo "Refresh page to take effect.";
+    } else {
+        $app->flash('error', 'You are not project creator');
+    }
 });
