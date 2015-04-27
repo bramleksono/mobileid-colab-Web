@@ -1,21 +1,17 @@
 <?php
 
 $app->get('/document', function () use($app,$twig) {
-	
-    /*
+    global $Webaddr;
+    
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
     
-	$idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
-	
 	$controller = new WebController($idnumber);
 	$list = $controller->showDocument();
 	
@@ -48,21 +44,15 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
     global $Webdocumentreceive;
     global $Webaddr;
     
-    //echo $documentnumber;
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
     
-	$idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
-
     $documentcontroller = new WebDocument();
     $document = $documentcontroller->fetchDocumentDB($documentnumber);
     $result = $documentcontroller->parseDocument($document);
@@ -90,7 +80,7 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
     } else {
         //if project already finished. hide sign button
         $signingmenu = "Not yet signed";
-        if (!$finishproject) {
+        if ((!$finishproject) && ($result["signer"] == $idnumber)) {
             //create sign button            
             $signingmenu = $signingmenu. '<br><button class="btn btn-primary docsign-btn" type="submit">Sign</button>';
         }
@@ -126,19 +116,16 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
 });
 
 $app->post('/document/create', function () use($app,$twig) {
-    /*
+    global $Webaddr;
+    
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-	$idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $projectname = $_POST["projectname"];
     $projectnumber = $_POST["projectnumber"];
@@ -165,19 +152,16 @@ $app->post('/document/create', function () use($app,$twig) {
 });
 
 $app->post('/document/process', function () use($app,$twig) {
-    /*
+    global $Webaddr;
+    
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-	$idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $target_dir = "temp/";
     $filename = basename( $_FILES["uploadFile"]["name"]);
@@ -210,12 +194,11 @@ $app->post('/document/process', function () use($app,$twig) {
     if ($result) {
         //echo "Document created!";
         $app->flash('info', 'Document created.');
-		$app->redirect('/project');
     } else {
         //echo "Failed to save document!";
         $app->flash('error', 'Failed to save document.');
-		$app->redirect('/project');
     }
+	$app->redirect('/project/'.$projectnumber);
 });
 
 $app->post('/document/receive', function () use($app) {
@@ -266,22 +249,22 @@ $app->post('/document/receive', function () use($app) {
 
 $app->get('/document/remove/:documentnumber', function ($documentnumber) use($app) {
     global $Webaddr;
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
     }
     else{
-        header("Location: ./");
+        header("Location: $Webaddr");
         die();
     }
-    */
-    
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $documentcontroller = new WebDocument();
     $document = $documentcontroller->fetchDocumentDB($documentnumber);
+    
+    $result = $documentcontroller->parseDocument($document);
+    $project = $documentcontroller->getProject($result["project"]);
+    $projectnumber = $project->get('projectnumber');
+    
     if ($document) {
         $creator = $document->get('creator');
         $signature = $document->get('signature');
@@ -296,6 +279,85 @@ $app->get('/document/remove/:documentnumber', function ($documentnumber) use($ap
     } else {
         $app->flash('error', 'Document is not exist.');
     }
-    $app->redirect('/project');
+    $app->redirect('/project/'.$projectnumber);
+});
 
+$app->get('/document/comment/:documentnumber', function ($documentnumber) use ($twig) {
+    global $Webaddr;
+    
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+    
+    $documentcontroller = new WebDocument();
+    $document = $documentcontroller->fetchDocumentDB($documentnumber);
+    $result = $documentcontroller->parseDocument($document);    
+    $documentname = $result["documentname"];
+
+	$display=array(
+		'pagetitle' => 'Project List - MobileID Web',
+	    'heading' => 'Add Comment',
+	    'idnumber' => $idnumber,
+	    'username' => $username,
+	    'documentnumber' => $documentnumber,
+	    'documentname' => $documentname,
+		'license' => 'Mobile ID Web Application',
+		'year' => '2015',
+		'author' => 'Bramanto Leksono',
+	);
+	
+	echo $twig->render('newcomment.html',$display);
+});
+
+$app->post('/document/comment/process', function () use($app,$twig) {
+    global $Webaddr;
+    
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+    
+    //comment : always, file : optional
+    $controller = new WebComment;
+    
+    if ($_FILES["uploadFile"]["tmp_name"] != "") {
+        //process uploaded file
+        $target_dir = "temp/";
+        $filename = basename( $_FILES["uploadFile"]["name"]);
+        $target_dir = $target_dir . $filename;
+        $uploadOk=1;
+        
+        if (move_uploaded_file($_FILES["uploadFile"]["tmp_name"], $target_dir)) {
+            $message = "The file ". $filename. " has been uploaded.";
+        } else {
+            $message = "Sorry, there was an error uploading your file.";
+        }
+        $file = file_get_contents($target_dir, true);
+        $fileurl = $controller->uploadFile($file, $filename);
+        var_dump($fileurl);
+    }
+    
+    //save to database
+    $form["documentnumber"] = $_POST["documentnumber"];
+    $form["comment"] = $_POST["comment"];
+    $form["poster"] = $idnumber;
+    
+    $result = $controller->createComment($form);
+    
+    //get project number
+    $documentcontroller = new WebDocument();
+    $document = $documentcontroller->fetchDocumentDB($_POST["documentnumber"]);
+    $result = $documentcontroller->parseDocument($document);
+    $project = $documentcontroller->getProject($result["project"]);
+    $projectnumber = $project->get('projectnumber');
+	$app->redirect('/project/'.$projectnumber);
 });

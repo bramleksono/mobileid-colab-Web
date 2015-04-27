@@ -24,7 +24,6 @@ $app->add(new \Slim\Middleware\SessionCookie(array(
     'expires' => '2 days'
 )));
 
-
 $app->get('/', function () use ($app) {
 	//TODO: jika sudah login, redirect ke home
     $app->redirect('/login');

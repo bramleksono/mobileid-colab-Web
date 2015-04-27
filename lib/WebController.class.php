@@ -1,6 +1,7 @@
 <?php
 
 require 'WebProject.class.php';  // Handling User Project Database
+require 'WebComment.class.php';  // Handling User Project Database
 
 class WebController {
 	private function getProjectNumber($time,$idnumber) {
@@ -79,7 +80,7 @@ class WebController {
         
 		$firstmilestone = 1;
         
-        return $project->storeProjectDB($form,$firstmilestone);
+        return array($project->storeProjectDB($form,$firstmilestone), $projectnumber);
     }
     
     public function showProject() {
@@ -270,19 +271,40 @@ class WebController {
             }
             
             $action = "";
-            if ($iscreator && !$isfinished) {
+            //show remove button if user is document creator, project is not finished, and document is not signed
+            if (($iscreator) && (!$isfinished) && (!$signature)) {
                 $action = '<a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/remove/'.$documentnumber.'">Remove</a>';
             }
             
     		//concatenate result
     		//$documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. '<a href="'.$documentaddress.'"><h4>'.$documentname.'</h4></a>';
             $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
-                     '<tr>
+                     '<table class="table"><tbody><tr>
                         <td>'.$iteration.'</td>
                         <td><a href="'.$documentaddress.'">'.$documentname.'</a></a></td>
                         <td>'.$signaturestatus.'</td>
                         <td>'.$opendocument.$action.'</td>
-                      </tr>';
+                        <td><a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/comment/'.$documentnumber.'">Add Comment</a></td>
+                      </tr></tbody></table>';
+            //search comment
+        	$comments = new WebComment();
+        	$commentlist = $comments->findCommentsbydocument($documentnumber);
+            if ($commentlist) {
+                $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]."<h4>Comment:</h4>";
+                foreach ($commentlist as $comment) {
+                    $poster = $comment->get('poster');
+                    $modified = $comment->get('modified');
+                    $commenttext = $comment->get('comment');
+                    $file = $comment->get('file');
+                    $filebutton = "";
+                    if ($file != "") {
+                        $filebutton = '<a href="'.$file->getURL().'">(View Attachment)</a>';
+                    }
+                    
+                    $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone].'<p>'.$poster.' : '.$commenttext.' '.$filebutton.' (at time '.$modified.' WIB)</p>';
+                }
+            }
+            
             $iteration++;
     	}
     	

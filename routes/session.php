@@ -15,6 +15,5 @@ $app->post('/session_starter', function () use($app) {
 $app->get('/session_destroyer', function () use($app) {
     // Unset all of the session variables.
     $_SESSION = array();
-    header("Location: ./home");
-    die();
+    $app->redirect('/home');
 });

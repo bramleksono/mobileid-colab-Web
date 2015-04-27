@@ -55,7 +55,7 @@
 		
         {% if approval %}
         
-        <form class="input-append" role="form" name="nextmilestone" action="http://t3box-160161.apse1.nitrousbox.com:8000/project/confirm" method="post">
+        <form class="input-append" role="form" name="nextmilestone" action="{{ Webprojectconfirmaddr }}" method="post">
         <input type="hidden" name="projectnumber" id="projectnumber" value="{{projectnumber}}">
         <button type="submit" class="btn btn-default btn-sm">
         <b>Approve &gt;&gt;</b>

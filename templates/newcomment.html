@@ -1,0 +1,52 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> {{ heading }}</h3>
+       <hr>
+       
+<div class="container">
+	<div class="row">
+		<input type="hidden" name="count" value="1" />
+        <div class="control-group" id="fields">
+            <div class="controls" id="profs"> 
+                <form class="input-append" role="form" name="newproject" action="{{ WebAddr }}/document/comment/process" method="post" enctype="multipart/form-data">
+                    <div id="field">
+				    
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Document Name</label>
+				    <div class="col-xs-10">
+				    <p><b>{{ documentname}}</b></p></div>
+				    <input type="hidden" name="documentnumber" id="documentnumber" value="{{ documentnumber }}" />
+				    </div>
+
+                    <div class="form-group">
+				    <label for="content" class="col-sm-2 control-label">Comment</label>
+				    <div class="col-xs-10">
+					<input type="text" class="form-control" id="comment" name="comment" placeholder=""></div>
+				    </div>
+                    
+                    </div>
+                    <ol class="breadcrumb">Attach a file <b>(10 MB Max)</b> : <input type="file" name="uploadFile"><br><input type="submit" value="Post"></ol>
+                </form>
+            <br>
+            </div>
+        </div>
+	</div>
+</div>
+
+{% endblock %}

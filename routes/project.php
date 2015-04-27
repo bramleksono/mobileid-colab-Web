@@ -2,7 +2,6 @@
 
 $app->get('/project', function () use($app,$twig) {
     global $Webaddr;
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -11,9 +10,6 @@ $app->get('/project', function () use($app,$twig) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
 	$controller = new WebController($idnumber);
 	$list = $controller->showProject();
@@ -66,8 +62,6 @@ $app->get('/project', function () use($app,$twig) {
 
 $app->get('/newproject', function () use($app,$twig) {
     global $Webaddr;
-    
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -76,9 +70,6 @@ $app->get('/newproject', function () use($app,$twig) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
 	
 	$display=array(
 		'pagetitle' => 'Project List - MobileID Web',
@@ -101,8 +92,6 @@ $app->post('/newproject/getinitial', function () {
 
 $app->post('/newproject/create', function () use($app,$twig) {
     global $Webaddr;
-    
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -111,9 +100,6 @@ $app->post('/newproject/create', function () use($app,$twig) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
 	$projectname = $_POST["projectname"];
 	$clientid = $_POST["clientid"];
@@ -134,17 +120,19 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	$controller = new WebController($idnumber);
 	$result = $controller->createProject($form);
 
-	if ($result) {
+	if ($result[0]) {
 		echo "Project created";
 	} else {
 		echo "Cannot save to database";
 	}
+	
+	$projectnumber = $result[1];
+	$app->redirect('/project/'.$projectnumber);
 });
 
 $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
     global $Webaddr;
-    
-    /*
+    global $Webprojectconfirm;
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -153,9 +141,6 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);
@@ -176,13 +161,15 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
     
     $header = '<p><b>Project Name : '.$result["projectname"].'</b></p><p><b>Creator : '.$result["creator"].'</b></p><p><b>Client : '.$result["client"].'</b></p><p><b>Current Milestone : '.$result["currentmilestone"].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
     
+    $iscreator = false;
+    if ($result["creator"] == $idnumber) {
+        $iscreator = true;
+    }
+    
     // check if both party already approve project
     if ($approval[0]) {
         // show project structure
-        $iscreator = false;
-        if ($result["creator"] == $idnumber) {
-            $iscreator = true;
-        }
+
         $documentstructure = $controller->getDocumentsfromProject($project, $iscreator, $result["finishproject"]);
         
         $milestonedropdown ='';
@@ -198,14 +185,9 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
                                         <div class="panel-heading"><h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordion" href="#collapse'.$i.'">'.$milestone[$i].'</a></h4>
                                         </div>
                                         <div id="collapse'.$i.'" class="panel-collapse">
-                                        <div class="panel-body">
-                                          <table class="table">'.
-                                            //'<thead><tr><th>#</th><th>Document Name</th><th>Status</th><th>Action</th></tr></thead>'.
-                                            '<tbody>'.
+                                        <div class="panel-body">'.
                                             $documentstructure[$i].
-                                            '</tbody>
-                                            </table>
-                                            </div>
+                                        '</div>
                                         </div>
                                     </div>';
         }
@@ -234,26 +216,48 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
         // show approval menu
         $form = '';
         for ($user = 0; $user <= 1; $user++) {
+            
+            //only show button for themself
             if ($user == 0) {
                 $approvaloffset = 1;
                 $identityoffset = 3;
+                
+                $creatoridentitybutton = '<button id="clickMe" class="btn btn-default" type="button" value="'. $result["creator"].'" onclick="';
+                if ($approval[$identityoffset]) {
+                    $creatoridentitybutton = $creatoridentitybutton. 'viewidentity(this);">View</button>';
+                } else {
+                    $creatoridentitybutton = $creatoridentitybutton. 'sendidentityreq(this);">Send Request</button></td>';
+                }
+                
                 $form[$user] =     '<td>Creator</td>
                                     <td>'.$result["creator"].'</td>
-                                    <td><button id="clickMe" class="btn btn-default" type="button" value="'. $result["creator"].'" onclick="';
+                                    <td>';
+                //show identity request button to self, show view identity for all
+                if (($iscreator) || ($approval[$identityoffset])) {
+                    $form[$user] = $form[$user] . $creatoridentitybutton;
+                }
+                
             } else if ($user == 1) {
                 $approvaloffset = 2;
                 $identityoffset = 4;
+                
+                $clientidentitybutton = '<button id="clickMe" class="btn btn-default" type="button" value="'. $result["creator"].'" onclick="';
+                if ($approval[$identityoffset]) {
+                    $clientidentitybutton = $clientidentitybutton. 'viewidentity(this);">View</button>';
+                } else {
+                    $clientidentitybutton = $clientidentitybutton. 'sendidentityreq(this);">Send Request</button></td>';
+                }
                 $form[$user] =     '<td>Client</td>
                                     <td>'.$result["client"].'</td>
-                                    <td><button id="clickMe" class="btn btn-default" type="button" value="'. $result["client"].'" onclick="';
+                                    <td>';                    
+                //show identity request button to self, show view identity for all
+                if ((!$iscreator) || ($approval[$identityoffset])) {
+                    $form[$user] = $form[$user] . $clientidentitybutton;
+                }
+                
             }
             
-            //identity viewer
-            if ($approval[$identityoffset]) {
-                $form[$user] = $form[$user]. 'viewidentity(this);">View</button></td>';
-            } else {
-                $form[$user] = $form[$user]. 'sendidentityreq(this);">Resend Request</button></td>';
-            }
+            $form[$user] = $form[$user] . '</td>';
             
             //approval status
             if ($approval[$approvaloffset]) {
@@ -264,15 +268,15 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
         }
         
         $showapprovalbutton = true;
-        //check if user already approved
+        //hide button condition : user already send approval or never send identity
         switch ($role) {
             case 1:
-                if ($approval[1]) {
+                if (($approval[1]) || (!$approval[3])) {
                     $showapprovalbutton = false;
                 }
                 break;
             case 2:
-                if ($approval[2]) {
+                if (($approval[2]) || (!$approval[4])) {
                     $showapprovalbutton = false;
                 }
                 break;
@@ -289,8 +293,8 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
             'creatorcontent' => $form[0],
             'clientcontent' => $form[1],
             'approval' => $showapprovalbutton,
+            'Webprojectconfirmaddr' => $Webprojectconfirm,
             'currentmilestone' => $result["currentmilestone"],
-            'milestonenumber' => $milestonenumber,
             'license' => 'Mobile ID Web Application',
             'year' => '2015',
             'author' => 'Bramanto Leksono',
@@ -302,7 +306,6 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
 
 $app->post('/project/next', function () use($app) {
     global $Webaddr;
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -311,9 +314,6 @@ $app->post('/project/next', function () use($app) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $projectnumber = $_POST["projectnumber"];
     $milestonename = $_POST["milestonename"];
@@ -352,8 +352,7 @@ $app->post('/project/confirm', function () use($app) {
     $value = "1";
     $project->set($roletext, $value);
     $project->save();
-    
-	$app->redirect('/project/'.$projectnumber);
+    $app->redirect('/project/'.$result['projectnumber']);
 });
 
 $app->post('/project/milestone/delete', function () use($app) {
@@ -386,8 +385,6 @@ $app->post('/project/milestone/delete', function () use($app) {
 
 $app->post('/project/milestone/create', function () use($app) {
     global $Webaddr;
-    
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -396,9 +393,6 @@ $app->post('/project/milestone/create', function () use($app) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
     
     $projectnumber = $_POST["projectnumber"];
     $milestonename = $_POST["milestonename"];
@@ -417,7 +411,6 @@ $app->post('/project/milestone/create', function () use($app) {
 
 $app->post('/project/finish', function () use($app) {
     global $Webaddr;
-    /*
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -426,9 +419,6 @@ $app->post('/project/finish', function () use($app) {
         header("Location: $Webaddr");
         die();
     }
-	*/
-    $idnumber = "1231230509890001";
-    $username = "Bramanto Leksono";
  
     $projectnumber = $_POST["projectnumber"];
 	$controller = new WebController($idnumber);
