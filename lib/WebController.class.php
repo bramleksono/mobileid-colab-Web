@@ -276,6 +276,11 @@ class WebController {
                 $action = '<a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/remove/'.$documentnumber.'">Remove</a>';
             }
             
+            $commentbutton = "";
+            if (!$isfinished) {
+                $commentbutton = '<a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/comment/'.$documentnumber.'">Add Comment</a>';
+            }
+            
     		//concatenate result
     		//$documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. '<a href="'.$documentaddress.'"><h4>'.$documentname.'</h4></a>';
             $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
@@ -284,7 +289,7 @@ class WebController {
                         <td><a href="'.$documentaddress.'">'.$documentname.'</a></a></td>
                         <td>'.$signaturestatus.'</td>
                         <td>'.$opendocument.$action.'</td>
-                        <td><a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/comment/'.$documentnumber.'">Add Comment</a></td>
+                        <td>'.$commentbutton.'</td>
                       </tr></tbody></table>';
             //search comment
         	$comments = new WebComment();
