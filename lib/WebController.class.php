@@ -400,6 +400,12 @@ class WebController {
         $project->save();
     }
     
+    
+    public function deleteProject($projectnumber) {
+        $project = $this->unparsedProject($projectnumber);
+        $project->destroy();
+    }
+    
     public function verifySignature($request) {
     	global $CAdocumentverify;
     	

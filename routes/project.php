@@ -130,7 +130,7 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	$app->redirect('/project/'.$projectnumber);
 });
 
-$app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
+$app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) {
     global $Webaddr;
     global $Webprojectconfirm;
     if(isset($_SESSION["idnumber"])){
@@ -144,6 +144,11 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
     
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);
+    if (!isset($project)) {
+        //project is not exist
+        $app->redirect('/project');
+    }
+    
 	$result = $controller->parseProject($project);
 	$role = $controller->checkRole($result, $idnumber);    
     
@@ -372,13 +377,16 @@ $app->post('/project/milestone/delete', function () use($app) {
     $result = $controller->deleteMilestone($projectnumber);
     switch ($result) {
         case 0:
-            $app->flash('error', 'Cannot delete. Document exist in milestone.');
+            //$app->flash('error', 'Cannot delete. Document exist in milestone.');
+            echo  'Cannot delete. Document exist in milestone.';
             break;
         case 1:
-            $app->flash('info', 'Milestone deleted.');
+            //$app->flash('info', 'Milestone deleted.');
+            echo 'Milestone deleted.';
             break;
         case 2:
-            $app->flash('error', 'Cannot delete. This is the 1st milestone.');
+            //$app->flash('error', 'Cannot delete. This is the 1st milestone.');
+            echo 'Cannot delete. This is the 1st milestone.';
             break;
     }
 });
@@ -430,6 +438,33 @@ $app->post('/project/finish', function () use($app) {
     if ($role == 1) {
         $project = $controller->finishProject($projectnumber);
         $app->flash('info', 'Project ended');
+        echo "Refresh page to take effect.";
+    } else {
+        $app->flash('error', 'You are not project creator');
+    }
+});
+
+$app->post('/project/delete', function () use($app) {
+    global $Webaddr;
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+ 
+    $projectnumber = $_POST["projectnumber"];
+	$controller = new WebController($idnumber);
+	
+    $project = $controller->unparsedProject($projectnumber);
+	$result = $controller->parseProject($project);
+	$role = $controller->checkRole($result, $idnumber);
+    
+    if ($role == 1) {
+        $project = $controller->deleteProject($projectnumber);
+        $app->flash('info', 'Project deleted');
         echo "Refresh page to take effect.";
     } else {
         $app->flash('error', 'You are not project creator');
