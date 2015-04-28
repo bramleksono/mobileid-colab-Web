@@ -170,7 +170,7 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig) {
     if ($approval[0]) {
         // show project structure
 
-        $documentstructure = $controller->getDocumentsfromProject($project, $iscreator, $result["finishproject"]);
+        $documentstructure = $controller->getDocumentsfromProject($project, $idnumber, $result["finishproject"]);
         
         $milestonedropdown ='';
         $milestonenumber = $result["milestonenumber"];

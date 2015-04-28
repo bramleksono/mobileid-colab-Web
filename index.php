@@ -21,7 +21,7 @@ $app = new \Slim\Slim(array(
 ));
 
 $app->add(new \Slim\Middleware\SessionCookie(array(
-    'expires' => '2 days'
+    'expires' => '20 minutes'
 )));
 
 $app->get('/', function () use ($app) {

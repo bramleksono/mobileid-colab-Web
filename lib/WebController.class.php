@@ -232,7 +232,7 @@ class WebController {
         return $data;
     }
     
-    public function getDocumentsfromProject($project, $iscreator, $isfinished) {
+    public function getDocumentsfromProject($project, $idnumber, $isfinished) {
         global $Webaddr;
         
         //search document
@@ -245,6 +245,7 @@ class WebController {
     	foreach ($documentlist as $document) {
     	    $documentnumber =  $document->get('documentnumber');
     		$documentname =  $document->get('documentname');
+    		$documentcreator =  $document->get('creator');
     		$currentmilestone = $document->get('milestone')-1;
     		$documentaddress = $Webaddr."/document/".$documentnumber;
     		$signature =  $document->get('signature');
@@ -272,7 +273,7 @@ class WebController {
             
             $action = "";
             //show remove button if user is document creator, project is not finished, and document is not signed
-            if (($iscreator) && (!$isfinished) && (!$signature)) {
+            if (($idnumber == $documentcreator) && (!$isfinished) && (!$signature)) {
                 $action = '<a class="btn btn-sm btn-default" href="'.$Webaddr.'/document/remove/'.$documentnumber.'">Remove</a>';
             }
             
