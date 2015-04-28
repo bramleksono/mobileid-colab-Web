@@ -82,7 +82,10 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
         $signingmenu = "Not yet signed";
         if ((!$finishproject) && ($result["signer"] == $idnumber)) {
             //create sign button            
-            $signingmenu = $signingmenu. '<br><button class="btn btn-primary docsign-btn" type="submit">Sign</button>';
+            $signingmenu = $signingmenu. ' <hr><div class="confirmation column"><form>
+                                           <label><input id="confirm" name="confirm" type="checkbox" />I agree to sign this document.</label>
+                                           </form></div>
+                                           <div class="btn-container"></div>';
         }
     }
     

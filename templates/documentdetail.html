@@ -27,6 +27,18 @@
        
 		<hr>
 		<script>
+		
+		var docsignBtn = '<button class="btn btn-primary docsign-btn" type="submit">Sign</button>';
+		
+		$(document).ready(function() {
+	        var $cbs = $('input[name="confirm"]').click(function() {
+	                         $('.btn-container').html('');
+	                         $('.btn-container').html(docsignBtn);
+	                        // $('.btn-verify-container').html('');
+	                        $('.debug-container')
+	        });
+	    });
+    
 		$(document).on('click','.docsign-btn',function(){
 		    $.ajax(
 		    {
