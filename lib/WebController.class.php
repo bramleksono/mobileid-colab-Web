@@ -301,6 +301,7 @@ class WebController {
                     $poster = $comment->get('poster');
                     $modified = $comment->get('modified');
                     $commenttext = $comment->get('comment');
+                    $commenttext = nl2br($commenttext); //convert new line in text to br tag in html
                     $file = $comment->get('file');
                     $filebutton = "";
                     if ($file != "") {
