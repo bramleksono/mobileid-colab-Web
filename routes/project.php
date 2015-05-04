@@ -246,7 +246,7 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
                 $approvaloffset = 2;
                 $identityoffset = 4;
                 
-                $clientidentitybutton = '<button id="clickMe" class="btn btn-default" type="button" value="'. $result["creator"].'" onclick="';
+                $clientidentitybutton = '<button id="clickMe" class="btn btn-default" type="button" value="'. $result["client"].'" onclick="';
                 if ($approval[$identityoffset]) {
                     $clientidentitybutton = $clientidentitybutton. 'viewidentity(this);">View</button>';
                 } else {
