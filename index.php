@@ -29,16 +29,10 @@ $app->get('/', function () use ($app) {
     $app->redirect('/login');
 });
 
-//Parse Backend
-use Parse\ParseClient;
-$app_id = "";
-$rest_key = "";
-$master_key= "";
-ParseClient::initialize( $app_id, $rest_key, $master_key );
-
 //Config
 $configfile = 'config.json';
 $addressfile = 'config/address.json';
+require 'config/parse.php';  // Initialize parse database
 
 //Lib
 require 'lib/addstruct.php';  // Construct client address
