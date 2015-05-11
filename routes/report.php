@@ -167,7 +167,8 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
             $content = $content. "Project Number : ".$result["projectnumber"]."\r\n";
             $content = $content. "Creator : ".$result["creator"]."\r\n";
             $content = $content. "Client : ".$result["client"]."\r\n";
-            $content = $content. "Created at : ".$result["modified"]." WIB\r\n\r\n";
+            $content = $content. "Created at : ".$result["modified"]." WIB\r\n";
+            $content = $content. "Ended at : ".$result["ended"]." WIB\r\n\r\n";
             
             $milestonelist = $result["milestone"];
             

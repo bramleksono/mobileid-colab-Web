@@ -19,6 +19,7 @@ class WebController {
         $clientapproval = $project->get('clientapproval');
         $clientidentity = $project->get('clientidentity');
         $modified = $project->get('modified');
+        $ended = $project->get('ended');
     	$milestone = json_decode($project->get('milestone'), true);
     	$milestonenumber = $project->get('currentmilestone');
         $finishproject = $project->get('finishproject');
@@ -33,6 +34,7 @@ class WebController {
                         "clientapproval" =>$clientapproval,
                         "clientidentity" =>$clientidentity,
                         "modified" =>$modified,
+                        "ended" =>$ended,
                         "currentmilestone" =>$currentmilestone,
                         "milestonenumber" => $milestonenumber,
                         "milestone" =>$milestone,
