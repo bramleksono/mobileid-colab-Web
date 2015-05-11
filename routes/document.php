@@ -363,7 +363,10 @@ $app->post('/document/comment/process', function () use($app,$twig) {
     
     //save to database
     $form["documentnumber"] = $_POST["documentnumber"];
-    $form["comment"] = $_POST["comment"];
+    
+    $comment = mb_strimwidth($_POST["comment"], 0, 80 );
+    
+    $form["comment"] = $comment;
     $form["poster"] = $idnumber;
     
     $result = $controller->createComment($form);
