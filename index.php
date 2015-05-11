@@ -38,17 +38,19 @@ require 'config/parse.php';  // Initialize parse database
 require 'lib/addstruct.php';  // Construct client address
 require 'lib/sending.php';  // Handling sending http request function
 require 'lib/crypt.php';  // Handling cryptographic function
-require 'lib/WebController.class.php';  // Web Controller
-require 'lib/WebDocument.class.php';  // Web Controller
+require 'lib/WebController.class.php';  // Web Controller Class
+require 'lib/WebDocument.class.php';  // Web Document Class
 
 //Routes
 require 'routes/login.php';  // Handling login function
 require 'routes/session.php';  // Handling session function
 require 'routes/home.php';  // Handling main menu
+require 'routes/guide.php';  // Handling guide list
 require 'routes/verify.php';  // Handling verify function
 require 'routes/signing.php';  // Handling document signing list
 require 'routes/project.php';  // Handling project list
 require 'routes/document.php';  // Handling project list
+require 'routes/report.php';  // Handling project list
 
 //Config
 $addressfile = 'config/address.json';

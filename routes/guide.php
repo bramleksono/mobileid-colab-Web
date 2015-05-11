@@ -1,6 +1,6 @@
 <?php
 
-$app->get('/home', function () use($app,$twig) {
+$app->get('/guide', function () use($app,$twig) {
     global $Webaddr;
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
@@ -10,17 +10,15 @@ $app->get('/home', function () use($app,$twig) {
         header("Location: $Webaddr");
         die();
     }
-	$greet = "Welcome, ".$username.". Select menu to get started.";
 	
 	$display=array(
 		'pagetitle' => 'Main Menu - MobileID Web',
-	    'heading' => 'Directive',
-	    'subheading' => $greet,
 	    'username' => $username,
 	    'idnumber' => $idnumber,
 		'license' => 'Mobile ID Web Application',
 		'year' => '2015',
 		'author' => 'Bramanto Leksono',
 	);
-	echo $twig->render('home.html',$display);
+	
+	echo $twig->render('guide.html',$display);
 });

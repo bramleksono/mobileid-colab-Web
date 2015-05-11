@@ -121,13 +121,15 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	$result = $controller->createProject($form);
 
 	if ($result[0]) {
-		echo "Project created";
+	    $app->flash('info', 'Project created.');
+	    $projectnumber = $result[1];
+	    $app->redirect('/project/'.$projectnumber);
 	} else {
-		echo "Cannot save to database";
+	    $app->flash('error', 'Cannot save to database.');
+	    $app->redirect('/project');
 	}
 	
-	$projectnumber = $result[1];
-	$app->redirect('/project/'.$projectnumber);
+	
 });
 
 $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) {
@@ -196,7 +198,10 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
                                         </div>
                                     </div>';
         }
-                
+        
+        global $Webprojectreport;
+        $reporturl = $Webprojectreport."/".$projectnumber;
+           
         $display=array(
             'pagetitle' => 'Project List - MobileID Web',
             'heading' => 'Project Detail '. $roletext,
@@ -211,9 +216,20 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
             'license' => 'Mobile ID Web Application',
             'milestonedropdown' => $milestonedropdown,
             'finished' => $result["finishproject"],
+            'reporturl' => $reporturl,
             'year' => '2015',
             'author' => 'Bramanto Leksono',
         );
+
+        if (isset($_SESSION['slim.flash']['info'])) {
+    		$info=array('info' => $_SESSION['slim.flash']['info']);
+    		$display = array_merge($display, $info);
+    	}
+    	
+    	if (isset($_SESSION['slim.flash']['error'])) {
+    		$info=array('alert' => $_SESSION['slim.flash']['error']);
+    		$display = array_merge($display, $info);
+    	}
 
         echo $twig->render('projectdetail.html',$display);       
         
@@ -305,6 +321,16 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
             'author' => 'Bramanto Leksono',
         );
         
+        if (isset($_SESSION['slim.flash']['info'])) {
+    		$info=array('info' => $_SESSION['slim.flash']['info']);
+    		$display = array_merge($display, $info);
+    	}
+    	
+    	if (isset($_SESSION['slim.flash']['error'])) {
+    		$info=array('alert' => $_SESSION['slim.flash']['error']);
+    		$display = array_merge($display, $info);
+    	}
+	
         echo $twig->render('projectapproval.html',$display);           
     }
 });
@@ -427,7 +453,7 @@ $app->post('/project/finish', function () use($app) {
         header("Location: $Webaddr");
         die();
     }
- 
+    
     $projectnumber = $_POST["projectnumber"];
 	$controller = new WebController($idnumber);
 	
@@ -438,7 +464,6 @@ $app->post('/project/finish', function () use($app) {
     if ($role == 1) {
         $project = $controller->finishProject($projectnumber);
         $app->flash('info', 'Project ended');
-        echo "Refresh page to take effect.";
     } else {
         $app->flash('error', 'You are not project creator');
     }

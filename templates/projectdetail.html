@@ -90,8 +90,8 @@
 		        
 		        data: {"projectnumber": "{{ projectnumber }}"},
 		        success: function (result) {
-					 alert(result);
-                     //window.location.reload();
+					 //alert(result);
+                     window.location.reload();
 		        }
 		    });
 		});
@@ -111,6 +111,10 @@
 		});
 		</script>
 
+        {% endif %}
+        
+        {% if finished %}
+        <a class="btn btn-sm btn-default" target="_blank" href="{{ reporturl }}"><b>Download Project Report</b></a>
         {% endif %}
 
 {% endblock %}

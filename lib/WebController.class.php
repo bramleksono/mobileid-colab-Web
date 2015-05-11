@@ -397,6 +397,11 @@ class WebController {
         $project = $this->unparsedProject($projectnumber);
         //set project status
     	$project->set("finishproject", "1");
+    	
+        $projectcontroller = new WebProject();
+        $time = $projectcontroller->getTime();
+    	$project->set("ended", $time);
+        
         //save
         $project->save();
     }

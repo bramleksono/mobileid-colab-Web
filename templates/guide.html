@@ -1,0 +1,36 @@
+{% extends "master.html" %}
+
+{% block content %}
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
+		       	
+      <!-- column 2 -->	
+       <h3> User Guide </h3>
+            
+       <hr>
+      
+	   <div class="row">
+            <!-- center left-->
+            <h4>General concept</h4>
+            <p>This website is a digital signing platform for e-commerce. Identity owner can </p>
+            
+            <h4>Steps</h4>
+            <p></p>
+            <h4>How to use</h4>
+            <p></p>
+            
+            <hr>
+       </div><!--/row-->
+       
+{% endblock %}

@@ -288,11 +288,10 @@ $app->get('/document/remove/:documentnumber', function ($documentnumber) use($ap
 $app->get('/document/comment/:documentnumber', function ($documentnumber) use ($twig) {
     global $Webaddr;
     
-    if(isset($_SESSION["idnumber"])){
+    if (isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
-    }
-    else{
+    } else{
         header("Location: $Webaddr");
         die();
     }
@@ -329,7 +328,20 @@ $app->post('/document/comment/process', function () use($app,$twig) {
         die();
     }
     
-    //comment : always, file : optional
+    //get project number
+    $documentcontroller = new WebDocument();
+    $document = $documentcontroller->fetchDocumentDB($_POST["documentnumber"]);
+    $result = $documentcontroller->parseDocument($document);
+    $project = $documentcontroller->getProject($result["project"]);
+    $projectnumber = $project->get('projectnumber');
+    
+    
+    if ($_POST["comment"] == ""){
+        $app->flash('error', 'Cannot post empty comment.');
+        $app->redirect('/project/'.$projectnumber);
+    }
+    
+    //comment : always. file : optional
     $controller = new WebComment;
     
     if ($_FILES["uploadFile"]["tmp_name"] != "") {
@@ -346,7 +358,7 @@ $app->post('/document/comment/process', function () use($app,$twig) {
         }
         $file = file_get_contents($target_dir, true);
         $fileurl = $controller->uploadFile($file, $filename);
-        var_dump($fileurl);
+        //var_dump($fileurl);
     }
     
     //save to database
@@ -355,12 +367,6 @@ $app->post('/document/comment/process', function () use($app,$twig) {
     $form["poster"] = $idnumber;
     
     $result = $controller->createComment($form);
-    
-    //get project number
-    $documentcontroller = new WebDocument();
-    $document = $documentcontroller->fetchDocumentDB($_POST["documentnumber"]);
-    $result = $documentcontroller->parseDocument($document);
-    $project = $documentcontroller->getProject($result["project"]);
-    $projectnumber = $project->get('projectnumber');
+    $app->flash('info', 'Successfully adding comment.');
 	$app->redirect('/project/'.$projectnumber);
 });
