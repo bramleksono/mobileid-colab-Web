@@ -114,6 +114,16 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
 		'callback' => $Webdocumentreceive,
 	);
 	
+	if (isset($_SESSION['slim.flash']['info'])) {
+        $info=array('info' => $_SESSION['slim.flash']['info']);
+        $display = array_merge($display, $info);
+    }
+    	
+    if (isset($_SESSION['slim.flash']['error'])) {
+        $info=array('alert' => $_SESSION['slim.flash']['error']);
+        $display = array_merge($display, $info);
+    }
+    	
 	echo $twig->render('documentdetail.html',$display);
     
 });
@@ -172,9 +182,9 @@ $app->post('/document/process', function () use($app,$twig) {
     $uploadOk=1;
     
     if (move_uploaded_file($_FILES["uploadFile"]["tmp_name"], $target_dir)) {
-        $message = "The file ". $filename. " has been uploaded.";
+        //$message = "The file ". $filename. " has been uploaded.";
     } else {
-        $message = "Sorry, there was an error uploading your file.";
+        //$message = "Sorry, there was an error uploading your file.";
     }
     
     $filehash = fileHash($target_dir);
@@ -183,11 +193,10 @@ $app->post('/document/process', function () use($app,$twig) {
     
     $projectnumber = $_POST["projectnumber"];
     $controller = new WebController($idnumber);
-    $project = $controller->unparsedProject($projectnumber);    
+    $project = $controller->unparsedProject($projectnumber);
+    $projectname = $project->get('projectname');
     
     $_POST["project_objectid"] = $project->getObjectId();
-    $_POST["creator"] = $idnumber;
-    $_POST["filehash"] = $filehash;
     $_POST["signer"] = $controller->setIDNumberbyRole($project, $_POST["signer"]);
     
     $controller = new WebDocument;
@@ -197,6 +206,12 @@ $app->post('/document/process', function () use($app,$twig) {
     if ($result) {
         //echo "Document created!";
         $app->flash('info', 'Document created.');
+        
+        //send message to phone
+        $idnumberlist = array($_POST["signer"]);
+        $messagecontroller = new WebMessage();
+        $messagetext = "Document ".$_POST["documentname"]." added to ".$projectname." project.";
+        $messagecontroller->sendmessageto($idnumberlist, $messagetext);
     } else {
         //echo "Failed to save document!";
         $app->flash('error', 'Failed to save document.');
@@ -275,6 +290,12 @@ $app->get('/document/remove/:documentnumber', function ($documentnumber) use($ap
         if (($idnumber == $creator) && (!$signature)) {
             $document->destroy();
             $app->flash('info', 'Document deleted.');
+            
+            //send message to phone
+            $idnumberlist = array($result["signer"]);
+            $messagecontroller = new WebMessage();
+            $messagetext = "Document ".$result["documentname"]." deleted.";
+            $messagecontroller->sendmessageto($idnumberlist, $messagetext);
         } else {
             $app->flash('error', 'Document must be removed by creator.');
             //only creator can delete document
@@ -352,9 +373,9 @@ $app->post('/document/comment/process', function () use($app,$twig) {
         $uploadOk=1;
         
         if (move_uploaded_file($_FILES["uploadFile"]["tmp_name"], $target_dir)) {
-            $message = "The file ". $filename. " has been uploaded.";
+            //$message = "The file ". $filename. " has been uploaded.";
         } else {
-            $message = "Sorry, there was an error uploading your file.";
+            //$message = "Sorry, there was an error uploading your file.";
         }
         $file = file_get_contents($target_dir, true);
         $fileurl = $controller->uploadFile($file, $filename);

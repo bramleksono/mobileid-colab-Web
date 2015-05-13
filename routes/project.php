@@ -122,6 +122,13 @@ $app->post('/newproject/create', function () use($app,$twig) {
 
 	if ($result[0]) {
 	    $app->flash('info', 'Project created.');
+	    
+	    //send message to phone
+        $idnumberlist = array($clientid);
+        $messagecontroller = new WebMessage();
+        $messagetext = "You are now added to ".$projectname." project by user ".$idnumber.".";
+        $messagecontroller->sendmessageto($idnumberlist, $messagetext);
+	    
 	    $projectnumber = $result[1];
 	    $app->redirect('/project/'.$projectnumber);
 	} else {
@@ -383,6 +390,16 @@ $app->post('/project/confirm', function () use($app) {
     $value = "1";
     $project->set($roletext, $value);
     $project->save();
+    
+    //check if both party has sent confirmation
+    if (($result["creatorapproval"] == "1") && ($result["clientapproval"] == "1")) {
+        //send message to phone
+        $idnumberlist = array($result["creator"], $result["client"]);
+        $messagecontroller = new WebMessage();
+        $messagetext = "Project ".$result["projectname"]." begin.";
+        $messagecontroller->sendmessageto($idnumberlist, $messagetext);
+    }
+    
     $app->redirect('/project/'.$result['projectnumber']);
 });
 
@@ -435,10 +452,10 @@ $app->post('/project/milestone/create', function () use($app) {
     $result = $controller->createMilestone($projectnumber, $milestonename);
     switch ($result) {
         case 0:
-            $app->flash('error', 'Cannot delete. Document exist in milestone.');
+            $app->flash('info', 'Milestone created.');
             break;
         case 1:
-            $app->flash('info', 'Milestone deleted.');
+            $app->flash('error', 'Cannot delete 1st milestone.');
             break;
     }
 });
@@ -460,6 +477,12 @@ $app->post('/project/finish', function () use($app) {
     $project = $controller->unparsedProject($projectnumber);
 	$result = $controller->parseProject($project);
 	$role = $controller->checkRole($result, $idnumber);
+	
+	//send message to phone
+    $idnumberlist = array($result["creator"], $result["client"]);
+    $messagecontroller = new WebMessage();
+    $messagetext = "Project ".$result["projectname"]." has ended.";
+    $messagecontroller->sendmessageto($idnumberlist, $messagetext);
     
     if ($role == 1) {
         $project = $controller->finishProject($projectnumber);
@@ -490,7 +513,12 @@ $app->post('/project/delete', function () use($app) {
     if ($role == 1) {
         $project = $controller->deleteProject($projectnumber);
         $app->flash('info', 'Project deleted');
-        echo "Refresh page to take effect.";
+        
+        //send message to phone
+        $idnumberlist = array($result["creator"], $result["client"]);
+        $messagecontroller = new WebMessage();
+        $messagetext = "Project ".$result["projectname"]." deleted.";
+        $messagecontroller->sendmessageto($idnumberlist, $messagetext);
     } else {
         $app->flash('error', 'You are not project creator');
     }

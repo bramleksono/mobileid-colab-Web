@@ -55,9 +55,10 @@ class WebComment {
     }
     
     private function searchWebCommentDB($column, $query) {
-		$web_project_que = new ParseQuery("web_comment");
-    	$web_project_que->equalTo($column, $query);
-    	$results = $web_project_que->find();
+		$web_comment_que = new ParseQuery("web_comment");
+    	$web_comment_que->equalTo($column, $query);
+    	$web_comment_que->ascending("createdAt");
+    	$results = $web_comment_que->find();
     	return $results;
 	}
 	

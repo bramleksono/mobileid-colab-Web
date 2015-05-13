@@ -55,6 +55,9 @@ $app->post('/process', function () use ($app, $twig) {
 		//create file to save login status
 		$filepath = "./data/PID/".$loginreq;		
 		file_put_contents($filepath,"Waiting..");
+		//save to record
+		$record = new WebRecord();
+		$record->savelogin($idnumber, "request");
 		
 		echo $twig->render('wait.html',$login );
 	}

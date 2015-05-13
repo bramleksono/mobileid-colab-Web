@@ -40,6 +40,8 @@ require 'lib/sending.php';  // Handling sending http request function
 require 'lib/crypt.php';  // Handling cryptographic function
 require 'lib/WebController.class.php';  // Web Controller Class
 require 'lib/WebDocument.class.php';  // Web Document Class
+require 'lib/WebMessage.class.php';  // Web Message Class
+require 'lib/WebRecord.class.php';  // Web Message Class
 
 //Routes
 require 'routes/login.php';  // Handling login function

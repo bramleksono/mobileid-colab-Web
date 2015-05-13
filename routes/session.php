@@ -1,15 +1,13 @@
 <?php
 
 $app->post('/session_starter', function () use($app) {
-    global $Webaddr;
-    if(isset($_SESSION["idnumber"])){
-        $idnumber = $_SESSION["idnumber"];
-        $username = $_SESSION["name"];
-    }
-    else{
-        header("Location: $Webaddr");
-        die();
-    }
+    
+    $_SESSION["idnumber"] = $_POST["idnumber"];
+    $_SESSION["name"] = $_POST["name"];
+    
+	//save to record
+	$record = new WebRecord();
+	$record->savelogin($_POST["idnumber"], "success");
 });
 
 
