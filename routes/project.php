@@ -363,6 +363,9 @@ $app->post('/project/next', function () use($app) {
 	$controller = new WebController($idnumber);
 	$project = $controller->nextMilestone($projectnumber, $milestonename);
 	
+	//show message
+	$app->flash('info', 'Milestone '.$milestonename.' created.');
+	
 	//save to record
 	$record = new WebRecord();
 	$record->recordmilestone($idnumber, $milestonename, $projectnumber, "next");
@@ -445,12 +448,12 @@ $app->post('/project/milestone/delete', function () use($app) {
     $result = $controller->deleteMilestone($projectnumber);
     switch ($result[0]) {
         case 0:
-            //$app->flash('error', 'Cannot delete. Document exist in milestone.');
-            echo  'Cannot delete. Document exist in milestone.';
+            $app->flash('error', 'Cannot delete. Document exist in milestone.');
+            //echo  'Cannot delete. Document exist in milestone.';
             break;
         case 1:
-            //$app->flash('info', 'Milestone deleted.');
-            echo 'Milestone '.$result[1].' deleted.';
+            $app->flash('info', 'Milestone deleted.');
+            //echo 'Milestone '.$result[1].' deleted.';
             
             //save to record
 		    $record = new WebRecord();
@@ -458,39 +461,8 @@ $app->post('/project/milestone/delete', function () use($app) {
 		    
             break;
         case 2:
-            //$app->flash('error', 'Cannot delete. This is the 1st milestone.');
-            echo 'Cannot delete. This is the 1st milestone.';
-            break;
-    }
-});
-
-$app->post('/project/milestone/create', function () use($app) {
-    global $Webaddr;
-    if(isset($_SESSION["idnumber"])){
-        $idnumber = $_SESSION["idnumber"];
-        $username = $_SESSION["name"];
-    }
-    else{
-        header("Location: $Webaddr");
-        die();
-    }
-    
-    $projectnumber = $_POST["projectnumber"];
-    $milestonename = $_POST["milestonename"];
-    
-	$controller = new WebController($idnumber);
-    $result = $controller->createMilestone($projectnumber, $milestonename);
-    switch ($result) {
-        case 0:
-            $app->flash('info', 'Milestone created.');
-            
-            //save to record
-		    $record = new WebRecord();
-		    $record->recordmilestone($idnumber, $milestonename, $projectnumber,"create");
-		
-            break;
-        case 1:
-            $app->flash('error', 'Cannot delete 1st milestone.');
+            $app->flash('error', 'Cannot delete. This is the 1st milestone.');
+            //echo 'Cannot delete. This is the 1st milestone.';
             break;
     }
 });

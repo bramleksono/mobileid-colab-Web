@@ -91,7 +91,7 @@ class WebRecord {
 	            $message = "Milestone ".$milestone." created for project number ".$projectnumber.".";
 	            break;
 	        case "delete":
-	            $message = "Milestone deleted for project number ".$projectnumber.".";
+	            $message = "Milestone ".$milestone." deleted for project number ".$projectnumber.".";
 	            break;
 	        case "next":
 	            $message = "Milestone ".$milestone." begin for project number ".$projectnumber.".";
