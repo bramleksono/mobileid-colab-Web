@@ -48,9 +48,8 @@
 		        data: {"documentnumber": "{{ documentnumber }}","projectname": "{{ projectname }}","signerid": "{{ signerid }}","fileurl":"{{ fileurl }}",
 		        		"filehash":"{{ filehash }}","documentname":"{{ documentname }}","description":"{{ description }}","callback":"{{ callback }}"},
 		        success: function (result) {
-					 alert(result);
-		            // result = jQuery.parseJSON(result);
-		            // $('.debug-container').html(result.status);
+					//alert(result);
+					window.location.reload();
 		        }
 		    });
 		});	
@@ -64,8 +63,6 @@
 		        data: {"signedhash": "{{ signedhash }}","signedtime": "{{ signedtime }}","signature": "{{ signature }}","signerid":"{{ signerid }}"},
 		        success: function (result) {
 					 alert(result);
-		            // result = jQuery.parseJSON(result);
-		            // $('.debug-container').html(result.status);
 		        }
 		    });
 		});				

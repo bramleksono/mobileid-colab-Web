@@ -57,7 +57,7 @@ $app->post('/process', function () use ($app, $twig) {
 		file_put_contents($filepath,"Waiting..");
 		//save to record
 		$record = new WebRecord();
-		$record->savelogin($idnumber, "request");
+		$record->recordlogin($idnumber, "request");
 		
 		echo $twig->render('wait.html',$login );
 	}

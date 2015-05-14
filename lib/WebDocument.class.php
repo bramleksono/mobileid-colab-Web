@@ -76,7 +76,7 @@ class WebDocument {
     		// echo 'Failed to create new object, with error message: ' + $ex->getMessage();
     		$result=0;
     	}
-    	return $result;
+    	return array ($result, $documentnumber);
     }
 
     public function parseDocument($document) {

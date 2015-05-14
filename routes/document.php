@@ -197,13 +197,15 @@ $app->post('/document/process', function () use($app,$twig) {
     $projectname = $project->get('projectname');
     
     $_POST["project_objectid"] = $project->getObjectId();
+    $_POST["creator"] = $idnumber;
+    $_POST["filehash"] = $filehash;
     $_POST["signer"] = $controller->setIDNumberbyRole($project, $_POST["signer"]);
     
     $controller = new WebDocument;
     $file = $controller->uploadFile($file, $filename);
     $result = $controller->createDocument($_POST);
     
-    if ($result) {
+    if ($result[0]) {
         //echo "Document created!";
         $app->flash('info', 'Document created.');
         
@@ -212,6 +214,10 @@ $app->post('/document/process', function () use($app,$twig) {
         $messagecontroller = new WebMessage();
         $messagetext = "Document ".$_POST["documentname"]." added to ".$projectname." project.";
         $messagecontroller->sendmessageto($idnumberlist, $messagetext);
+        
+        //save to record
+        $record = new WebRecord();
+	    $record->recorddocument($idnumber, $result[1], "create");
     } else {
         //echo "Failed to save document!";
         $app->flash('error', 'Failed to save document.');
@@ -230,6 +236,7 @@ $app->post('/document/receive', function () use($app) {
 
     $documentcontroller = new WebDocument();
     $document = $documentcontroller->fetchDocumentDB($documentnumber);
+    $parseddocument = $documentcontroller->parseDocument($document);
     
     if ($document) {
         $error = 0;
@@ -262,6 +269,10 @@ $app->post('/document/receive', function () use($app) {
         $fileurl = $documentcontroller->uploadFile($file, $filename);
         //update database
         $result = $documentcontroller->saveSignedDocument($body, $document);
+        
+        //save to record
+        $record = new WebRecord();
+    	$record->recordsigning($parseddocument["signer"], $body["documentnumber"], "success");
     }
 });
 
@@ -296,6 +307,11 @@ $app->get('/document/remove/:documentnumber', function ($documentnumber) use($ap
             $messagecontroller = new WebMessage();
             $messagetext = "Document ".$result["documentname"]." deleted.";
             $messagecontroller->sendmessageto($idnumberlist, $messagetext);
+            
+            //save to record
+            $record = new WebRecord();
+    	    $record->recorddocument($idnumber, $documentnumber, "delete");
+	    
         } else {
             $app->flash('error', 'Document must be removed by creator.');
             //only creator can delete document

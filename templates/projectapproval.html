@@ -78,8 +78,6 @@
 		        data: "idnumber="+idnumber+"&projectid="+projectnumber,
 		        success: function (result) {
 					 alert(result);
-		            // result = jQuery.parseJSON(result);
-		            // $('.debug-container').html(result.status);
 		        }
 		    });
         }
@@ -93,9 +91,8 @@
 		
 		        data: "idnumber="+idnumber+"&projectid="+projectnumber,
 		        success: function (result) {
-					 alert(result);
-		            // result = jQuery.parseJSON(result);
-		            // $('.debug-container').html(result.status);
+					//alert(result);
+					window.location.reload();
 		        }
 		    });
         }  

@@ -1,6 +1,16 @@
 <?php
 
 $app->post('/verify/request', function () use($app) {
+    global $Webaddr;
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+    
     global $CAverify;
     global $Webverifyconfirm;
     
@@ -9,7 +19,17 @@ $app->post('/verify/request', function () use($app) {
     
     $req = (object) array("userinfo" => (object) array("nik" => $idnumber), "callback" => $Webverifyconfirm, "projectid" => $projectid);
     $req = json_encode($req);
-    echo $result =sendjson($req,$CAverify);
+    $result =sendjson($req,$CAverify);
+    $result = json_decode($result, true);
+    if ($result["success"]) {
+        $app->flash('info', 'Request sent. Check your device to confirm identity request.');
+    } else {
+        $app->flash('error', $result["reason"]);
+    }
+    
+    //save to record
+	$record = new WebRecord();
+	$record->recordverify($idnumber, "request");
 });
 
 $app->post('/verify/confirm', function () use($app) {
@@ -19,6 +39,10 @@ $app->post('/verify/confirm', function () use($app) {
     $userinfo = json_encode($body["userinfo"]);
     $idnumber = $body["userinfo"]["nik"];
     $projectnumber = $body["projectid"];
+    
+    //save to record
+	$record = new WebRecord();
+	$record->recordverify($idnumber, "success");
     
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);

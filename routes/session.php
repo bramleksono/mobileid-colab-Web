@@ -7,7 +7,7 @@ $app->post('/session_starter', function () use($app) {
     
 	//save to record
 	$record = new WebRecord();
-	$record->savelogin($_POST["idnumber"], "success");
+	$record->recordlogin($_POST["idnumber"], "success");
 });
 
 

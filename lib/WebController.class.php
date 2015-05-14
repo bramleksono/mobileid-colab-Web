@@ -336,10 +336,11 @@ class WebController {
     public function deleteMilestone($projectnumber) {
         $project = $this->unparsedProject($projectnumber);
     	$currentmilestone = $project->get("currentmilestone");
+        $deletedmilestone = "";
         
         if ($currentmilestone == 1) {
             //cannot remove 1st milestone
-            return 2;
+            $result = 2;
         } else {
             //search document
             $documents = new WebDocument();
@@ -354,16 +355,19 @@ class WebController {
 
             if ($documentcount == 0) {
     	        $milestonelist = json_decode($project->get("milestone"));
+    	        $deletedmilestone = $milestonelist[$currentmilestone-1];
                 unset($milestonelist[$currentmilestone-1]);
                 $milestonelist = array_values($milestonelist);
                 $project->set("milestone", json_encode($milestonelist));
                 $project->set("currentmilestone", strval($currentmilestone-1));
                 $project->save();
-                return 1;
+                $result = 1;
             } else {
-                return 0;
+                $result =  0;
             }
         }
+        
+        return array($result, $deletedmilestone);
     }
     
     public function createMilestone($projectnumber, $milestonename) {
