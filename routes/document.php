@@ -401,7 +401,7 @@ $app->post('/document/comment/process', function () use($app,$twig) {
     //save to database
     $form["documentnumber"] = $_POST["documentnumber"];
     
-    $comment = mb_strimwidth($_POST["comment"], 0, 80 );
+    $comment = mb_strimwidth($_POST["comment"], 0, 250 );
     
     $form["comment"] = $comment;
     $form["poster"] = $idnumber;

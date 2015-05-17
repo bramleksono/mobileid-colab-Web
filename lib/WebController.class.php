@@ -310,7 +310,7 @@ class WebController {
                         $filebutton = '<a href="'.$file->getURL().'">(View Attachment)</a>';
                     }
                     
-                    $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone].'<p>'.$poster.' : '.$commenttext.' '.$filebutton.' (at time '.$modified.' WIB)</p>';
+                    $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone].'<p style="word-wrap: break-word;">'.$poster.' : '.$commenttext.' '.$filebutton.' (at time '.$modified.' WIB)</p>';
                 }
             }
             
