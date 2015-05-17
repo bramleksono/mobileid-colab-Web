@@ -445,25 +445,35 @@ $app->post('/project/milestone/delete', function () use($app) {
     
     $projectnumber = $_POST["projectnumber"];
 	$controller = new WebController($idnumber);
-    $result = $controller->deleteMilestone($projectnumber);
-    switch ($result[0]) {
-        case 0:
-            $app->flash('error', 'Cannot delete. Document exist in milestone.');
-            //echo  'Cannot delete. Document exist in milestone.';
-            break;
-        case 1:
-            $app->flash('info', 'Milestone deleted.');
-            //echo 'Milestone '.$result[1].' deleted.';
-            
-            //save to record
-		    $record = new WebRecord();
-		    $record->recordmilestone($idnumber, $result[1], $projectnumber, "delete");
-		    
-            break;
-        case 2:
-            $app->flash('error', 'Cannot delete. This is the 1st milestone.');
-            //echo 'Cannot delete. This is the 1st milestone.';
-            break;
+	$project = $controller->unparsedProject($projectnumber);
+	$result = $controller->parseProject($project);
+	$role = $controller->checkRole($result, $idnumber);
+    
+    if ($role == 1) {
+        $deleteresult = $controller->deleteMilestone($projectnumber);
+        
+        switch ($deleteresult[0]) {
+            case 0:
+                $app->flash('error', 'Cannot delete milestone. Document exist in milestone.');
+                //echo  'Cannot delete. Document exist in milestone.';
+                break;
+            case 1:
+                $app->flash('info', 'Milestone deleted.');
+                //echo 'Milestone '.$result[1].' deleted.';
+                
+                //save to record
+    		    $record = new WebRecord();
+    		    $record->recordmilestone($idnumber, $deleteresult[1], $projectnumber, "delete");
+    		    
+                break;
+            case 2:
+                $app->flash('error', 'Cannot delete milestone. This is the 1st milestone.');
+                //echo 'Cannot delete. This is the 1st milestone.';
+                break;
+        }
+
+    } else {
+        $app->flash('error', 'You are not project creator');
     }
 });
 
@@ -523,18 +533,28 @@ $app->post('/project/delete', function () use($app) {
 	$role = $controller->checkRole($result, $idnumber);
     
     if ($role == 1) {
-        $project = $controller->deleteProject($projectnumber);
-        $app->flash('info', 'Project deleted');
+        $deleteresult = $controller->deleteProject($projectnumber);
         
-        //send message to phone
-        $idnumberlist = array($result["creator"], $result["client"]);
-        $messagecontroller = new WebMessage();
-        $messagetext = "Project ".$result["projectname"]." deleted.";
-        $messagecontroller->sendmessageto($idnumberlist, $messagetext);
+        switch ($deleteresult) {
+            case 0:
+                $app->flash('error', 'Cannot delete project. Document exist in project.');
+                //echo  'Cannot delete. Document exist in milestone.';
+                break;
+            case 1:
+                $app->flash('info', 'Project deleted');
+                
+                //send message to phone
+                $idnumberlist = array($result["creator"], $result["client"]);
+                $messagecontroller = new WebMessage();
+                $messagetext = "Project ".$result["projectname"]." deleted.";
+                $messagecontroller->sendmessageto($idnumberlist, $messagetext);
+                
+                //save to record
+            	$record = new WebRecord();
+            	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"delete");
+                break;
+        }
         
-        //save to record
-    	$record = new WebRecord();
-    	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"delete");
     } else {
         $app->flash('error', 'You are not project creator');
     }

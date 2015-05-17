@@ -415,7 +415,21 @@ class WebController {
     
     public function deleteProject($projectnumber) {
         $project = $this->unparsedProject($projectnumber);
-        $project->destroy();
+        
+        //search document
+        $documents = new WebDocument();
+        $documentlist = $documents->findDocumentsbyproject($project);
+
+        $documentcount = count($documentlist);
+
+        if ($documentcount == 0) {
+            $project->destroy();
+            $result = 1;
+        } else {
+            $result =  0;
+        }
+        
+        return $result;
     }
     
     public function verifySignature($request) {
