@@ -28,8 +28,9 @@ $app->post('/verify/request', function () use($app) {
     }
     
     //save to record
-	$record = new WebRecord();
-	$record->recordverify($idnumber, "request");
+    $record = new WebRecord();;
+    $record->recordverify($idnumber, "request");
+
 });
 
 $app->post('/verify/confirm', function () use($app) {
@@ -60,6 +61,10 @@ $app->post('/verify/view', function () use($app) {
     
     $idnumber = $app->request()->post("idnumber");
     $projectnumber = $app->request()->post("projectid");
+    
+    //save to record
+	$record = new WebRecord();
+	$record->recordverify($idnumber, "view");
     
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);

@@ -9,6 +9,28 @@ class WebRecord {
 		$current_date = new DateTime("now");
         return $current_date->format('Y-m-d H:i:s');		
 	}
+	
+	private function get_ip_address(){
+	    foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key){
+	        if (array_key_exists($key, $_SERVER) === true){
+	            foreach (explode(',', $_SERVER[$key]) as $ip){
+	                $ip = trim($ip); // just to be safe
+	
+	                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false){
+	                    return $ip;
+	                }
+	            }
+	        }
+	    }
+	}
+    
+    private function searchRecordDB($column, $query) {
+		$web_record_obj = new ParseQuery("web_record");
+		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100 results)
+    	$web_record_obj->equalTo($column, $query);
+    	$results = $web_record_obj->find();
+    	return $results;
+	}
     
 	private function storeRecordDB($form) {
 		$time = $this->getTime();
@@ -35,7 +57,33 @@ class WebRecord {
     	return $result;
 	}
 	
+	public function sortRecordDBbyAction($idnumber) {
+		$querys = $this->searchRecordDB("idnumber", $idnumber);
+		
+		$category = array("login", "project", "milestone", "verify", "document", "signing");
+		
+		//initialize output
+		foreach ($category as $cat) {
+			$sortedrecord[$cat] = "";
+		}
+		
+		foreach ($querys as $query) {
+			$querycategory = $query->get("category");
+			$querymessage = $query->get("message");
+			$querytime = $query->get("modified");
+			//classify record based on category
+			for ($categoryiteration = 0; $categoryiteration < count($category); $categoryiteration++) {
+				if ($querycategory == $category[$categoryiteration]) {
+					//match category
+					$sortedrecord[$querycategory] = $sortedrecord[$querycategory]. $querymessage. " Time ". $querytime. " WIB.\n";
+				}
+			}
+		}
+		return $sortedrecord;
+	}
+	
 	public function recordlogin($idnumber, $action) {
+		$clientip = $this->get_ip_address();
 	    $category = "login";
 	    switch ($action) {
 	        case "request":
@@ -45,6 +93,7 @@ class WebRecord {
 	            $message = "Successful login for user ".$idnumber.".";
 	            break;
 	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
@@ -56,6 +105,7 @@ class WebRecord {
 	}
 	
 	public function recordproject($idnumber, $projectname, $projectnumber, $action) {
+		$clientip = $this->get_ip_address();
 	    $category = "project";
 	    switch ($action) {
 	        case "create":
@@ -74,6 +124,7 @@ class WebRecord {
 	            $message = "Project ".$projectname." with project number ".$projectnumber." finished.";
 	            break;
 	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
@@ -85,6 +136,7 @@ class WebRecord {
 	}
 	
 	public function recordmilestone($idnumber, $milestone, $projectnumber, $action) {
+		$clientip = $this->get_ip_address();
 	    $category = "milestone";
 	    switch ($action) {
 	        case "create":
@@ -97,6 +149,7 @@ class WebRecord {
 	            $message = "Milestone ".$milestone." begin for project number ".$projectnumber.".";
 	            break;
 	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
@@ -108,6 +161,7 @@ class WebRecord {
 	}
 	
 	public function recordverify($idnumber, $action) {
+		$clientip = $this->get_ip_address();
 	    $category = "verify";
 	    switch ($action) {
 	        case "request":
@@ -116,7 +170,11 @@ class WebRecord {
 	        case "success":
 	            $message = "Successful verify request for user ".$idnumber.".";
 	            break;
+	        case "view":
+	            $message = "Successful view identity for user ".$idnumber.".";
+	            break;
 	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
@@ -128,6 +186,7 @@ class WebRecord {
 	}
 	
 	public function recorddocument($idnumber, $documentnumber, $action) {
+		$clientip = $this->get_ip_address();
 	    $category = "document";
 	    switch ($action) {
 	        case "create":
@@ -137,6 +196,7 @@ class WebRecord {
 	            $message = "Document with number ".$documentnumber." deleted.";
 	            break;
 	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
@@ -148,6 +208,7 @@ class WebRecord {
 	}
 	
 	public function recordsigning($idnumber, $documentnumber, $action) {
+		$clientip = $this->get_ip_address();
 	    $category = "signing";
 	    switch ($action) {
 	        case "request":
@@ -157,6 +218,7 @@ class WebRecord {
 	            $message = "Successful signing for document number ".$documentnumber.".";
 	            break;
 	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,

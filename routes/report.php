@@ -185,10 +185,20 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
                 $milestonenumber++;
             }
             
-            $content = $content. "This report is generated in ".$time." WIB as user ".$idnumber.".";
-            
-            $content = nl2br($content);
+            $recordcontroller = new WebRecord();
+            $content = $content. "\r\n\r\nCreator Record\r\n";
+            $content = $content. "----------------\r\n";
+            $action = $recordcontroller->sortRecordDBbyAction($result["creator"]);
+            $content = $content. parserecord($action);
+            $content = $content. "\r\n\r\nClient Record\r\n";
+            $content = $content. "----------------\r\n";
+            $action = $recordcontroller->sortRecordDBbyAction($result["client"]);
+            $content = $content. parserecord($action);
 
+            
+            $content = $content. "\r\nThis report is generated in ".$time." WIB as user ".$idnumber.".";
+            $content = nl2br($content);
+            
         	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
         	
         	// set default monospaced font
@@ -217,7 +227,7 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
             
         	$pdf->Output("project report ".$time.".pdf", 'D');
             
-            echo $content;
+            //echo $content;
             
 	        break;
 	    case 1:
@@ -253,4 +263,37 @@ function parseidentitytotext($identity) {
              "Berlaku Hingga : ". $identity["berlaku"] . "\r\n";   
              
     return $identity;
+}
+
+function parserecord($action) {
+    $content = "";
+    $categorys = array("login", "project", "milestone", "verify", "document", "signing");
+    foreach ($categorys as $category) {
+        if ($action[$category] != "") {
+            switch ($category) {
+                case "login":
+                    $content = $content. "\r\nLogin Record\r\n";
+                    break;
+                case "project":
+                    $content = $content. "\r\nProject Record\r\n";
+                    break;
+                case "milestone":
+                    $content = $content. "\r\nMilestone Record\r\n";
+                    break;
+                case "verify":
+                    $content = $content. "\r\nVerify Record\r\n";
+                    break;
+                case "document":
+                    $content = $content. "\r\nDocument Record\r\n";
+                    break;
+                case "signing":
+                    $content = $content. "\r\nSigning Record\r\n";
+                    break;
+                }
+            $content = $content. "----------------\r\n";
+            $content = $content. $action[$category];
+        }
+    }
+    
+    return $content;
 }

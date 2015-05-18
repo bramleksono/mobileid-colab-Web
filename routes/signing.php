@@ -45,7 +45,6 @@ $app->post('/signing/document', function () use($app) {
             $app->flash('error', $result["reason"]);
         }
         
-
     }
     else {
         echo "Cannot proceed. You are not signer.";    

@@ -14,12 +14,11 @@ class WebMessage {
     
 	public function sendmessageto($idnumberlist, $message) {
         global $CAmessaging;
-        
         foreach ($idnumberlist as $idnumber) {
     		$reg = (object) array("userinfo" => (object) array("nik" => $idnumber, "message" => $message));
         	$reg = $this->constmessagetoCA($reg);
         	$reg = json_encode($reg);
-        	return $result = sendjson($reg,$CAmessaging);
+        	sendjson($reg,$CAmessaging);
         }
 	}
 }

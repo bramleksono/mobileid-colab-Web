@@ -140,8 +140,6 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	    $app->flash('error', 'Cannot save to database.');
 	    $app->redirect('/project');
 	}
-	
-	
 });
 
 $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) {

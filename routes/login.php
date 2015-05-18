@@ -26,8 +26,7 @@ $app->post('/process', function () use ($app, $twig) {
 		//invalid input
 		$app->flash('error', 'Input not valid. Enter correct ID number.');
 		$app->redirect('/login');
-	}
-	else {
+	} else {
 		//process request
 		global $CAlogin;
 		global $Webloginconfirm;
@@ -53,7 +52,7 @@ $app->post('/process', function () use ($app, $twig) {
 			'loginsession' => $loginreq,
 		);
 		//create file to save login status
-		$filepath = "./data/PID/".$loginreq;		
+		$filepath = "./data/PID/".$loginreq;
 		file_put_contents($filepath,"Waiting..");
 		//save to record
 		$record = new WebRecord();
