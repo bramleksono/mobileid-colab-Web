@@ -82,7 +82,9 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
         $signingmenu = "Not yet signed";
         if ((!$finishproject) && ($result["signer"] == $idnumber)) {
             //create sign button            
-            $signingmenu = $signingmenu. ' <hr><div class="confirmation column"><form>
+            $signingmenu = $signingmenu. ' <hr><div class="confirmation column">
+                                           <p>Check box below if you agree to sign document</p>
+                                           <form>
                                            <label><input id="confirm" name="confirm" type="checkbox" />I agree to sign this document.</label>
                                            </form></div>
                                            <div class="btn-container"></div>';
@@ -206,7 +208,6 @@ $app->post('/document/process', function () use($app,$twig) {
     $result = $controller->createDocument($_POST);
     
     if ($result[0]) {
-        //echo "Document created!";
         $app->flash('info', 'Document created.');
         
         //send message to phone
@@ -217,10 +218,15 @@ $app->post('/document/process', function () use($app,$twig) {
         
         //save to record
         $record = new WebRecord();
-	    $record->recorddocument($idnumber, $result[1], "create");
+	    $record->recorddocument($idnumber, $result[1], "create", $projectnumber);
     } else {
-        //echo "Failed to save document!";
-        $app->flash('error', 'Failed to save document.');
+        
+        $errormessage = 'Failed to save document.';
+        $app->flash('error', $errormessage);
+        
+        //save to record
+        $record = new WebRecord();
+    	$record->recorddocument($idnumber, $documentnumber, "failed", $projectnumber, $errormessage);
     }
 	$app->redirect('/project/'.$projectnumber);
 });
@@ -271,8 +277,11 @@ $app->post('/document/receive', function () use($app) {
         $result = $documentcontroller->saveSignedDocument($body, $document);
         
         //save to record
+    
+        $project = $documentcontroller->getProject($parseddocument["project"]);
+        $projectnumber = $project->get('projectnumber');
         $record = new WebRecord();
-    	$record->recordsigning($parseddocument["signer"], $body["documentnumber"], "success");
+    	$record->recordsigning($parseddocument["signer"], $body["documentnumber"], "success", $projectnumber, "");
     }
 });
 
@@ -310,11 +319,16 @@ $app->get('/document/remove/:documentnumber', function ($documentnumber) use($ap
             
             //save to record
             $record = new WebRecord();
-    	    $record->recorddocument($idnumber, $documentnumber, "delete");
+    	    $record->recorddocument($idnumber, $documentnumber, "delete", $projectnumber, "");
 	    
         } else {
-            $app->flash('error', 'Document must be removed by creator.');
+            $errormessage = 'Document must be removed by creator.';
+            $app->flash('error', $errormessage);
             //only creator can delete document
+            
+            //save to record
+            $record = new WebRecord();
+    	    $record->recorddocument($idnumber, $documentnumber, "failed", $projectnumber, $errormessage);
         }
     } else {
         $app->flash('error', 'Document is not exist.');
@@ -409,4 +423,8 @@ $app->post('/document/comment/process', function () use($app,$twig) {
     $result = $controller->createComment($form);
     $app->flash('info', 'Successfully adding comment.');
 	$app->redirect('/project/'.$projectnumber);
+	
+	//save to record
+    $record = new WebRecord();
+    $record->recordcomment($idnumber, $form["documentnumber"], "success", $projectnumber, "");
 });

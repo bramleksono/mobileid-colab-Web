@@ -1,13 +1,13 @@
 <?php
 
 require 'lib/tcpdf_min/tcpdf.php';
+require 'lib/PHPExcel/PHPExcel.php';  // Web Message Class
 
 $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
     global $Webaddr;
     global $CAaddr;
     global $SIaddr;
     
-    global $Webprojectconfirm;
     if(isset($_SESSION["idnumber"])){
         $idnumber = $_SESSION["idnumber"];
         $username = $_SESSION["name"];
@@ -185,18 +185,6 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
                 $milestonenumber++;
             }
             
-            $recordcontroller = new WebRecord();
-            $content = $content. "\r\n\r\nCreator Record\r\n";
-            $content = $content. "----------------\r\n";
-            $action = $recordcontroller->sortRecordDBbyAction($result["creator"]);
-            $content = $content. parserecord($action);
-            $content = $content. "\r\n\r\nClient Record\r\n";
-            $content = $content. "----------------\r\n";
-            $action = $recordcontroller->sortRecordDBbyAction($result["client"]);
-            $content = $content. parserecord($action);
-
-            
-            $content = $content. "\r\nThis report is generated in ".$time." WIB as user ".$idnumber.".";
             $content = nl2br($content);
             
         	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
@@ -226,7 +214,7 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
             $pdf->lastPage();
             
         	$pdf->Output("project report ".$time.".pdf", 'D');
-            
+        	
             //echo $content;
             
 	        break;
@@ -245,6 +233,212 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
 	}
 
 });
+
+$app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
+    
+    global $Webaddr;
+    if(isset($_SESSION["idnumber"])){
+        $idnumber = $_SESSION["idnumber"];
+        $username = $_SESSION["name"];
+    }
+    else{
+        header("Location: $Webaddr");
+        die();
+    }
+    
+    $error = 0;
+    
+    $controller = new WebController($idnumber);
+    $project = $controller->unparsedProject($projectnumber);
+    if (!isset($project)) {
+        //project is not exist
+        $error = 1;
+    }
+    
+    if ($error == 0) {
+        //check user role
+    	$result = $controller->parseProject($project);
+    	$role = $controller->checkRole($result, $idnumber);    
+        
+    	$roletext ="";
+    	switch ($role) {
+    		case 1:
+    			$roletext = "as Creator";
+    			break;
+    		case 2:
+    			$roletext = "as Client";
+    			break;
+    		default:
+    		    $error = 2;
+    		    break;
+    	}
+    }
+    
+    if ($error == 0) {
+        //check if project status as finished
+        if (!$result["finishproject"]) {
+            $error = 3;
+        }
+    }
+    
+	switch ($error) {
+	    case 0:
+	        //create report
+    	    $current_date = new DateTime("now");
+        	$time = $current_date->format('Y-m-d H:i:s');
+            
+            // Create new PHPExcel object
+            $objPHPExcel = new PHPExcel();
+            
+            // Set document properties
+            $objPHPExcel->getProperties()->setCreator("Mobile ID Digital Signature")
+            							 ->setLastModifiedBy("Mobile ID Digital Signature")
+            							 ->setTitle($result["projectnumber"]." Log Report");
+            
+            // Add Project Information
+            $contents = array(  "Disclaimer", 
+                                "This is a report of finished project.", 
+                                "This document contain all information which can be used as a proof.",
+                                "",
+                                "Project Information",
+                                "Project Name : ".$result["projectname"],
+                                "Project Number : ".$result["projectnumber"],
+                                "Creator : ".$result["creator"],
+                                "Client : ".$result["client"],
+                                "Created at : ".$result["modified"],
+                                "Ended at : ".$result["ended"]." WIB",
+                                "",
+                                "This report is generated in ".$time." WIB as user ".$idnumber."."
+                        );
+            
+            $objPHPExcel->setActiveSheetIndex(0);
+            $rowindex = 1;
+            foreach ($contents as $content) {
+                $objPHPExcel->getActiveSheet()->setCellValue('A'.$rowindex, $content);
+                $rowindex++;
+            }
+            $objPHPExcel->getActiveSheet()->setTitle('Project Information');
+            
+            // Add Log
+            $recordcontroller = new WebRecord();
+
+            //Begin Creator Log
+            $contents = $recordcontroller->getUserRecord($result["creator"], $result["projectnumber"]);
+            $objPHPExcel->createSheet();
+            $objPHPExcel->setActiveSheetIndex(1);
+            
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', "ID Number")
+                                                ->setCellValue('B1', "Category")
+                                                ->setCellValue('C1', "Action")
+                                                ->setCellValue('D1', "Message")
+                                                ->setCellValue('E1', "Time");
+            
+            $rowindex = 2;
+            foreach ($contents as $content) {
+                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$rowindex, $content["idnumber"], PHPExcel_Cell_DataType::TYPE_STRING)
+                                                    ->setCellValue('B'.$rowindex, $content["category"])
+                                                    ->setCellValue('C'.$rowindex, $content["action"])
+                                                    ->setCellValue('D'.$rowindex, $content["message"])
+                                                    ->setCellValue('E'.$rowindex, $content["time"]);
+                
+                $rowindex++;
+            }
+            $objPHPExcel->getActiveSheet()->setTitle('Creator Log');
+
+            //Begin Client Log
+            $contents = $recordcontroller->getUserRecord($result["client"], $result["projectnumber"]);
+            $objPHPExcel->createSheet();
+            $objPHPExcel->setActiveSheetIndex(2);
+            
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', "ID Number")
+                                                ->setCellValue('B1', "Category")
+                                                ->setCellValue('C1', "Action")
+                                                ->setCellValue('D1', "Message")
+                                                ->setCellValue('E1', "Time");
+            
+            $rowindex = 2;
+            foreach ($contents as $content) {
+                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$rowindex, $content["idnumber"], PHPExcel_Cell_DataType::TYPE_STRING)
+                                                    ->setCellValue('B'.$rowindex, $content["category"])
+                                                    ->setCellValue('C'.$rowindex, $content["action"])
+                                                    ->setCellValue('D'.$rowindex, $content["message"])
+                                                    ->setCellValue('E'.$rowindex, $content["time"]);
+                
+                $rowindex++;
+            }
+            $objPHPExcel->getActiveSheet()->setTitle('Client Log');
+            
+            //Begin Creator Login Log
+            $contents = $recordcontroller->getUserLoginRecord($result["creator"]);
+            $objPHPExcel->createSheet();
+            $objPHPExcel->setActiveSheetIndex(3);
+            
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', "ID Number")
+                                                ->setCellValue('B1', "Category")
+                                                ->setCellValue('C1', "Action")
+                                                ->setCellValue('D1', "Message")
+                                                ->setCellValue('E1', "Time");
+            
+            $rowindex = 2;
+            foreach ($contents as $content) {
+                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$rowindex, $content["idnumber"], PHPExcel_Cell_DataType::TYPE_STRING)
+                                                    ->setCellValue('B'.$rowindex, $content["category"])
+                                                    ->setCellValue('C'.$rowindex, $content["action"])
+                                                    ->setCellValue('D'.$rowindex, $content["message"])
+                                                    ->setCellValue('E'.$rowindex, $content["time"]);
+                
+                $rowindex++;
+            }
+            $objPHPExcel->getActiveSheet()->setTitle('Creator Login Log');
+            
+            //Begin Client Login Log
+            $contents = $recordcontroller->getUserLoginRecord($result["client"]);
+            $objPHPExcel->createSheet();
+            $objPHPExcel->setActiveSheetIndex(4);
+            
+            $objPHPExcel->getActiveSheet()->setCellValue('A1', "ID Number")
+                                                ->setCellValue('B1', "Category")
+                                                ->setCellValue('C1', "Action")
+                                                ->setCellValue('D1', "Message")
+                                                ->setCellValue('E1', "Time");
+            
+            $rowindex = 2;
+            foreach ($contents as $content) {
+                $objPHPExcel->getActiveSheet()->setCellValueExplicit('A'.$rowindex, $content["idnumber"], PHPExcel_Cell_DataType::TYPE_STRING)
+                                                    ->setCellValue('B'.$rowindex, $content["category"])
+                                                    ->setCellValue('C'.$rowindex, $content["action"])
+                                                    ->setCellValue('D'.$rowindex, $content["message"])
+                                                    ->setCellValue('E'.$rowindex, $content["time"]);
+                
+                $rowindex++;
+            }
+            $objPHPExcel->getActiveSheet()->setTitle('Client Login Log');
+            
+            $objPHPExcel->setActiveSheetIndex(0);
+            
+            header('Content-Type: application/vnd.ms-excel');
+            header('Content-Disposition: attachment;filename="project log "'.$time.'".xlsx"');
+            
+	        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+
+            $objWriter->save('php://output');
+	        break;
+	    case 1:
+	        echo "Error : Project is not exist!";
+	        die();
+	        break;
+	    case 2:
+	        echo "Error : You are not involved in this project";
+	        die();
+	        break;
+	    case 3:
+	        echo "Error : Project is not finished";
+	        die();
+	        break;
+	}
+
+});
+
 
 function parseidentitytotext($identity) {
     $identity =  "NIK : ". $identity["nik"] . "\r\n".

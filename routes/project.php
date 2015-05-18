@@ -121,7 +121,7 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	$result = $controller->createProject($form);
 
 	if ($result[0]) {
-	    $app->flash('info', 'Project created.');
+	    $app->flash('info', 'Project created (Proyek berhasil dibuat).');
 	    
 	    //send message to phone
         $idnumberlist = array($clientid);
@@ -133,12 +133,17 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	    
 	    //save to record
 	    $record = new WebRecord();
-	    $record->recordproject($idnumber, $projectname, $projectnumber,"create");
+	    $record->recordproject($idnumber, $projectname, $projectnumber,"create", "");
 
 	    $app->redirect('/project/'.$projectnumber);
 	} else {
-	    $app->flash('error', 'Cannot save to database.');
+	    $errormessage = 'Cannot save to database.';
+	    $app->flash('error', $errormessage);
 	    $app->redirect('/project');
+	    
+	    //save to record
+	    $record = new WebRecord();
+	    $record->recordproject($idnumber, $projectname, $projectnumber,"failed", $errormessage);
 	}
 });
 
@@ -209,8 +214,9 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
                                     </div>';
         }
         
-        global $Webprojectreport;
+        global $Webprojectreport, $Webprojectlog;
         $reporturl = $Webprojectreport."/".$projectnumber;
+        $logturl = $Webprojectlog."/".$projectnumber;
            
         $display=array(
             'pagetitle' => 'Project List - MobileID Web',
@@ -227,6 +233,7 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
             'milestonedropdown' => $milestonedropdown,
             'finished' => $result["finishproject"],
             'reporturl' => $reporturl,
+            'logurl' => $logturl,
             'year' => '2015',
             'author' => 'Bramanto Leksono',
         );
@@ -366,7 +373,7 @@ $app->post('/project/next', function () use($app) {
 	
 	//save to record
 	$record = new WebRecord();
-	$record->recordmilestone($idnumber, $milestonename, $projectnumber, "next");
+	$record->recordmilestone($idnumber, $milestonename, $projectnumber, "next", "");
 });
 
 $app->post('/project/confirm', function () use($app) {
@@ -400,10 +407,10 @@ $app->post('/project/confirm', function () use($app) {
     $value = "1";
     $project->set($roletext, $value);
     $project->save();
-
+    
     //save to record
 	$record = new WebRecord();
-	$record->recordproject($idnumber, $result["projectname"], $result["projectnumber"],"confirm");
+	$record->recordproject($idnumber, $result["projectname"], $result["projectnumber"],"confirm", "");
     
     //reload project
     $project = $controller->unparsedProject($projectnumber);
@@ -419,11 +426,11 @@ $app->post('/project/confirm', function () use($app) {
         
         //save to record
 		$record = new WebRecord();
-		$record->recordproject($idnumber, $result["projectname"], $result["projectnumber"],"start");
+		$record->recordproject($idnumber, $result["projectname"], $result["projectnumber"],"start", "");
 		
-		$app->flash('info', 'Approval sent. Project begin.');
+		$app->flash('info', 'Project begin (Proyek dimulai).');
     } else {
-        $app->flash('info', 'Approval sent. Please wait for approval from other party.');
+        $app->flash('info', 'Wait for other person approval (Tunggu approval pihak lain).');
     }
     
     $app->redirect('/project/'.$result['projectnumber']);
@@ -465,8 +472,13 @@ $app->post('/project/milestone/delete', function () use($app) {
     		    
                 break;
             case 2:
-                $app->flash('error', 'Cannot delete milestone. This is the 1st milestone.');
+                $errormessage = 'Cannot delete milestone. This is the 1st milestone.';
+                $app->flash('error', $errormessage);
                 //echo 'Cannot delete. This is the 1st milestone.';
+                
+                //save to record
+    		    $record = new WebRecord();
+    		    $record->recordmilestone($idnumber, $deleteresult[1], $projectnumber, "failed", $errormessage);
                 break;
         }
 
@@ -505,10 +517,15 @@ $app->post('/project/finish', function () use($app) {
     
     	//save to record
     	$record = new WebRecord();
-    	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"finish");
+    	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"finish", "");
 
     } else {
-        $app->flash('error', 'You are not project creator');
+        $errormessage = 'You are not project creator';
+        $app->flash('error', $errormessage);
+        
+        //save to record
+    	$record = new WebRecord();
+    	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"failed", $errormessage);
     }
 });
 
@@ -554,6 +571,11 @@ $app->post('/project/delete', function () use($app) {
         }
         
     } else {
-        $app->flash('error', 'You are not project creator');
+        $errormessage = 'You are not project creator';
+        $app->flash('error', $errormessage);
+        
+        //save to record
+    	$record = new WebRecord();
+    	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"failed", $errormessage);
     }
 });

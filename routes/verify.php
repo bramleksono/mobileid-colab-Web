@@ -23,13 +23,19 @@ $app->post('/verify/request', function () use($app) {
     $result = json_decode($result, true);
     if ($result["success"]) {
         $app->flash('info', 'Request sent. Check your device to confirm identity request.');
+        
+        //save to record
+        $record = new WebRecord();;
+        $record->recordverify($idnumber, "request", $projectid, "");
     } else {
         $app->flash('error', $result["reason"]);
+        
+        //save to record
+        $record = new WebRecord();;
+        $record->recordverify($idnumber, "failed", $projectid, $result["reason"]);
     }
     
-    //save to record
-    $record = new WebRecord();;
-    $record->recordverify($idnumber, "request");
+
 
 });
 
@@ -41,10 +47,6 @@ $app->post('/verify/confirm', function () use($app) {
     $idnumber = $body["userinfo"]["nik"];
     $projectnumber = $body["projectid"];
     
-    //save to record
-	$record = new WebRecord();
-	$record->recordverify($idnumber, "success");
-    
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);
     
@@ -55,17 +57,17 @@ $app->post('/verify/confirm', function () use($app) {
         $project->set("clientidentity", $userinfo);
     }
     $project->save();
+    
+    //save to record
+	$record = new WebRecord();
+	$record->recordverify($idnumber, "success", $projectnumber, "");
 });
 
 $app->post('/verify/view', function () use($app) {
     
     $idnumber = $app->request()->post("idnumber");
     $projectnumber = $app->request()->post("projectid");
-    
-    //save to record
-	$record = new WebRecord();
-	$record->recordverify($idnumber, "view");
-    
+
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);
     
@@ -92,4 +94,8 @@ $app->post('/verify/view', function () use($app) {
          "Pekerjaan : ". $identity["pekerjaan"] . "\n".
          "Kewarganegaraan : ". $identity["kewarganegaraan"] . "\n".
          "Berlaku Hingga : ". $identity["berlaku"] . "\n";
+         
+    //save to record
+	$record = new WebRecord();
+	$record->recordverify($idnumber, "view", $projectnumber, "");
 });

@@ -5,6 +5,8 @@ use Parse\ParseObject;
 use Parse\ParseQuery;
 
 class WebRecord {
+	
+	
     private function getTime() {
 		$current_date = new DateTime("now");
         return $current_date->format('Y-m-d H:i:s');		
@@ -24,13 +26,97 @@ class WebRecord {
 	    }
 	}
     
-    public function searchRecordDB($projectnumber) {
+    private function parseRecordDB($querys) {
+		$sortedrecord = array();
+		
+		if (isset ($querys)) {
+			foreach ($querys as $query) {
+				$queryidnumber = $query->get("idnumber");
+				$querycategory = $query->get("category");
+				$querymessage = $query->get("message");
+				$querytime = $query->get("modified");
+				$queryaction = $query->get("action");
+				
+				$row = array("idnumber" => $queryidnumber,
+				                     "category" => $querycategory,
+				                     "action" => $queryaction,
+				                     "message" => $querymessage,
+				                     "time" => $querytime
+				                     );
+				                     
+				array_push($sortedrecord, $row);
+			}		
+		}
+		return $sortedrecord;
+	}
+    
+    private function countLoginRecordDB($idnumber) {
+		$web_record_obj = new ParseQuery("web_record");
+    	$web_record_obj->equalTo("idnumber", $idnumber);
+    	$web_record_obj->equalTo("category", "login");
+    	return $web_record_obj->count();
+	}
+    
+    private function searchLoginRecordDB($skippage, $idnumber) {
 		$web_record_obj = new ParseQuery("web_record");
 		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100)
-    	$web_record_obj->equalTo("projectnumber", $projectnumber);
-    	$results = $web_record_obj->find();
-    	$this->web_record_result = $results;
+    	$web_record_obj->equalTo("idnumber", $idnumber);
+    	$web_record_obj->equalTo("category", "login");
+    	if ($skippage != 0) {
+            $web_record_obj->skip($skippage);
+        }
+    	return $results = $web_record_obj->find();
 	}
+    
+    public function getUserLoginRecord($idnumber) {
+    	$count = $this->countLoginRecordDB($idnumber);
+    	
+    	//output variable
+    	$sortedrecord = array();
+    	
+    	//search per 1000 items
+    	for ($i=0; $i < $count; $i=$i+1000) {
+			$resultquery = $this->searchLoginRecordDB($i, $idnumber);
+			$sortedquery = $this->parseRecordDB($resultquery);
+			$sortedrecord = array_merge($sortedrecord, $sortedquery);
+		}
+		
+		return $sortedrecord;
+    }
+    
+    private function countRecordDB($idnumber, $projectnumber) {
+		$web_record_obj = new ParseQuery("web_record");
+    	$web_record_obj->equalTo("idnumber", $idnumber);
+    	$web_record_obj->equalTo("projectnumber", $projectnumber);
+    	return $web_record_obj->count();
+	}
+    
+    private function searchRecordDB($skippage, $idnumber, $projectnumber) {
+		$web_record_obj = new ParseQuery("web_record");
+		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100)
+    	$web_record_obj->equalTo("idnumber", $idnumber);
+    	$web_record_obj->equalTo("projectnumber", $projectnumber);
+    	if ($skippage != 0) {
+            $web_record_obj->skip($skippage);
+        }
+    	return $results = $web_record_obj->find();
+	}
+    
+    public function getUserRecord($idnumber, $projectnumber) {
+    	$count = $this->countRecordDB($idnumber, $projectnumber);
+    	
+    	//output variable
+    	$sortedrecord = array();
+    	
+    	//search per 1000 items
+    	for ($i=0; $i < $count; $i=$i+1000) {
+			$resultquery = $this->searchRecordDB($i, $idnumber, $projectnumber);
+			$sortedquery = $this->parseRecordDB($resultquery);
+			$sortedrecord = array_merge($sortedrecord, $sortedquery);
+		}
+		
+		return $sortedrecord;
+    }
     
 	private function storeRecordDB($form) {
 		$time = $this->getTime();
@@ -58,76 +144,6 @@ class WebRecord {
     	return $result;
 	}
 	
-	public function findloginRecord($idnumber) {
-		$web_record_obj = new ParseQuery("web_record");
-		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100 results)
-    	$web_record_obj->equalTo("idnumber", $idnumber);
-    	$web_record_obj->equalTo("category", "login");
-    	$querys = $web_record_obj->find();
-    	
-    	$category = array("login", "project", "milestone", "verify", "document", "signing");
-		$sortedrecord = array();
-		
-		if (isset ($querys)) {
-			foreach ($querys as $query) {
-				$queryidnumber = $query->get("idnumber");
-				$querycategory = $query->get("category");
-				$querymessage = $query->get("message");
-				$querytime = $query->get("modified");
-				$queryaction = $query->get("action");
-				if ($queryidnumber == $idnumber) {
-					//classify record based on category
-					for ($categoryiteration = 0; $categoryiteration < count($category); $categoryiteration++) {
-						if ($querycategory == $category[$categoryiteration]) {
-							//match category
-							$row = array("idnumber" => $queryidnumber,
-				                         "category" => $querycategory,
-				                         "action" => $queryaction,
-				                         "message" => $querymessage,
-				                         "time" => $querytime
-				                        );
-				            array_push($sortedrecord, $row);
-						}
-					}
-				}
-			}			
-		}
-		return $sortedrecord;
-	}
-	
-	public function sortRecordDBbyAction($idnumber) {
-		$querys = $this->web_record_result;
-		$category = array("login", "project", "milestone", "verify", "document", "signing");
-		
-		$sortedrecord = array();
-		
-		if (isset ($querys)) {
-			foreach ($querys as $query) {
-				$queryidnumber = $query->get("idnumber");
-				$querycategory = $query->get("category");
-				$querymessage = $query->get("message");
-				$querytime = $query->get("modified");
-				$queryaction = $query->get("action");
-				if ($queryidnumber == $idnumber) {
-					//classify record based on category
-					for ($categoryiteration = 0; $categoryiteration < count($category); $categoryiteration++) {
-						if ($querycategory == $category[$categoryiteration]) {
-							//match category
-							$row = array("idnumber" => $queryidnumber,
-				                         "category" => $querycategory,
-				                         "action" => $queryaction,
-				                         "message" => $querymessage,
-				                         "time" => $querytime
-				                        );
-				            array_push($sortedrecord, $row);
-						}
-					}
-				}
-			}			
-		}
-		return $sortedrecord;
-	}
-	
 	public function recordlogin($idnumber, $action) {
 		$clientip = $this->get_ip_address();
 	    $category = "login";
@@ -137,6 +153,9 @@ class WebRecord {
 	            break;
 	        case "success":
 	            $message = "Successful login for user ".$idnumber.".";
+	            break;
+	        case "logout":
+	            $message = "Successful logout for user ".$idnumber.".";
 	            break;
 	    }
 	    $message = $message. " Client IP address: ".$clientip.".";

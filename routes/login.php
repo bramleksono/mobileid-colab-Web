@@ -45,7 +45,7 @@ $app->post('/process', function () use ($app, $twig) {
 		$login=array(
 			'pagetitle' => 'Login - MobileID Web',
 			'heading' => 'Waiting CA response',
-			'subheading' => 'Check your device to confirm login request',
+			'subheading' => 'Check your device to confirm login request (Periksa perangkat untuk mengkonfirmasi permintaan login)',
 			'license' => 'Mobile ID Web Application',
 			'year' => '2015',
 			'author' => 'Bramanto Leksono',
