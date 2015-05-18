@@ -24,12 +24,12 @@ class WebRecord {
 	    }
 	}
     
-    private function searchRecordDB($column, $query) {
+    public function searchRecordDB($projectnumber) {
 		$web_record_obj = new ParseQuery("web_record");
-		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100 results)
-    	$web_record_obj->equalTo($column, $query);
+		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100)
+    	$web_record_obj->equalTo("projectnumber", $projectnumber);
     	$results = $web_record_obj->find();
-    	return $results;
+    	$this->web_record_result = $results;
 	}
     
 	private function storeRecordDB($form) {
@@ -38,6 +38,7 @@ class WebRecord {
 		$web_record_obj = new ParseObject("web_record");
 		$web_record_obj->set("idnumber", $form["idnumber"]);
 		$web_record_obj->set("category", $form["category"]);
+		$web_record_obj->set("projectnumber", $form["projectnumber"]);
 		$web_record_obj->set("action", $form["action"]);
 		$web_record_obj->set("message", $form["message"]);
 		$web_record_obj->set("modified", $time);
@@ -57,27 +58,72 @@ class WebRecord {
     	return $result;
 	}
 	
-	public function sortRecordDBbyAction($idnumber) {
-		$querys = $this->searchRecordDB("idnumber", $idnumber);
+	public function findloginRecord($idnumber) {
+		$web_record_obj = new ParseQuery("web_record");
+		$web_record_obj->limit(1000); // set limit to 1000 results (default are 100 results)
+    	$web_record_obj->equalTo("idnumber", $idnumber);
+    	$web_record_obj->equalTo("category", "login");
+    	$querys = $web_record_obj->find();
+    	
+    	$category = array("login", "project", "milestone", "verify", "document", "signing");
+		$sortedrecord = array();
 		
+		if (isset ($querys)) {
+			foreach ($querys as $query) {
+				$queryidnumber = $query->get("idnumber");
+				$querycategory = $query->get("category");
+				$querymessage = $query->get("message");
+				$querytime = $query->get("modified");
+				$queryaction = $query->get("action");
+				if ($queryidnumber == $idnumber) {
+					//classify record based on category
+					for ($categoryiteration = 0; $categoryiteration < count($category); $categoryiteration++) {
+						if ($querycategory == $category[$categoryiteration]) {
+							//match category
+							$row = array("idnumber" => $queryidnumber,
+				                         "category" => $querycategory,
+				                         "action" => $queryaction,
+				                         "message" => $querymessage,
+				                         "time" => $querytime
+				                        );
+				            array_push($sortedrecord, $row);
+						}
+					}
+				}
+			}			
+		}
+		return $sortedrecord;
+	}
+	
+	public function sortRecordDBbyAction($idnumber) {
+		$querys = $this->web_record_result;
 		$category = array("login", "project", "milestone", "verify", "document", "signing");
 		
-		//initialize output
-		foreach ($category as $cat) {
-			$sortedrecord[$cat] = "";
-		}
+		$sortedrecord = array();
 		
-		foreach ($querys as $query) {
-			$querycategory = $query->get("category");
-			$querymessage = $query->get("message");
-			$querytime = $query->get("modified");
-			//classify record based on category
-			for ($categoryiteration = 0; $categoryiteration < count($category); $categoryiteration++) {
-				if ($querycategory == $category[$categoryiteration]) {
-					//match category
-					$sortedrecord[$querycategory] = $sortedrecord[$querycategory]. $querymessage. " Time ". $querytime. " WIB.\n";
+		if (isset ($querys)) {
+			foreach ($querys as $query) {
+				$queryidnumber = $query->get("idnumber");
+				$querycategory = $query->get("category");
+				$querymessage = $query->get("message");
+				$querytime = $query->get("modified");
+				$queryaction = $query->get("action");
+				if ($queryidnumber == $idnumber) {
+					//classify record based on category
+					for ($categoryiteration = 0; $categoryiteration < count($category); $categoryiteration++) {
+						if ($querycategory == $category[$categoryiteration]) {
+							//match category
+							$row = array("idnumber" => $queryidnumber,
+				                         "category" => $querycategory,
+				                         "action" => $queryaction,
+				                         "message" => $querymessage,
+				                         "time" => $querytime
+				                        );
+				            array_push($sortedrecord, $row);
+						}
+					}
 				}
-			}
+			}			
 		}
 		return $sortedrecord;
 	}
@@ -97,6 +143,7 @@ class WebRecord {
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
+	                    "projectnumber" => "",
 	                    "action" => $action,
 	                    "message" => $message,
                     );
@@ -104,7 +151,7 @@ class WebRecord {
 	    return $this->storeRecordDB($form);
 	}
 	
-	public function recordproject($idnumber, $projectname, $projectnumber, $action) {
+	public function recordproject($idnumber, $projectname, $projectnumber, $action, $message) {
 		$clientip = $this->get_ip_address();
 	    $category = "project";
 	    switch ($action) {
@@ -123,11 +170,15 @@ class WebRecord {
 	        case "finish":
 	            $message = "Project ".$projectname." with project number ".$projectnumber." finished.";
 	            break;
+	        case "failed":
+	        	//use message from input
+	            break;
 	    }
 	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
+	                    "projectnumber" => $projectnumber,
 	                    "action" => $action,
 	                    "message" => $message,
                     );
@@ -135,7 +186,7 @@ class WebRecord {
 	    return $this->storeRecordDB($form);
 	}
 	
-	public function recordmilestone($idnumber, $milestone, $projectnumber, $action) {
+	public function recordmilestone($idnumber, $milestone, $projectnumber, $action, $message) {
 		$clientip = $this->get_ip_address();
 	    $category = "milestone";
 	    switch ($action) {
@@ -148,11 +199,15 @@ class WebRecord {
 	        case "next":
 	            $message = "Milestone ".$milestone." begin for project number ".$projectnumber.".";
 	            break;
+	        case "failed":
+	        	//use message from input
+	            break;
 	    }
 	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
+	                    "projectnumber" => $projectnumber,
 	                    "action" => $action,
 	                    "message" => $message,
                     );
@@ -160,7 +215,7 @@ class WebRecord {
 	    return $this->storeRecordDB($form);
 	}
 	
-	public function recordverify($idnumber, $action) {
+	public function recordverify($idnumber, $action, $projectnumber, $message) {
 		$clientip = $this->get_ip_address();
 	    $category = "verify";
 	    switch ($action) {
@@ -173,11 +228,15 @@ class WebRecord {
 	        case "view":
 	            $message = "Successful view identity for user ".$idnumber.".";
 	            break;
+	        case "failed":
+	        	//use message from input
+	            break;
 	    }
 	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
+	                    "projectnumber" => $projectnumber,
 	                    "action" => $action,
 	                    "message" => $message,
                     );
@@ -185,7 +244,7 @@ class WebRecord {
 	    return $this->storeRecordDB($form);
 	}
 	
-	public function recorddocument($idnumber, $documentnumber, $action) {
+	public function recorddocument($idnumber, $documentnumber, $action, $projectnumber, $message) {
 		$clientip = $this->get_ip_address();
 	    $category = "document";
 	    switch ($action) {
@@ -195,11 +254,15 @@ class WebRecord {
 	        case "delete":
 	            $message = "Document with number ".$documentnumber." deleted.";
 	            break;
+	        case "failed":
+	        	//use message from input
+	            break;
 	    }
 	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
+	                    "projectnumber" => $projectnumber,
 	                    "action" => $action,
 	                    "message" => $message,
                     );
@@ -207,7 +270,7 @@ class WebRecord {
 	    return $this->storeRecordDB($form);
 	}
 	
-	public function recordsigning($idnumber, $documentnumber, $action) {
+	public function recordsigning($idnumber, $documentnumber, $action, $projectnumber, $message) {
 		$clientip = $this->get_ip_address();
 	    $category = "signing";
 	    switch ($action) {
@@ -217,11 +280,38 @@ class WebRecord {
 	        case "success":
 	            $message = "Successful signing for document number ".$documentnumber.".";
 	            break;
+	        case "failed":
+	        	//use message from input
+	            break;
 	    }
 	    $message = $message. " Client IP address: ".$clientip.".";
 	    
 	    $form = array(  "idnumber" => $idnumber,
 	                    "category" => $category,
+	                    "projectnumber" => $projectnumber,
+	                    "action" => $action,
+	                    "message" => $message,
+                    );
+	    
+	    return $this->storeRecordDB($form);
+	}
+	
+	public function recordcomment($idnumber, $documentnumber, $action, $projectnumber, $message) {
+		$clientip = $this->get_ip_address();
+	    $category = "signing";
+	    switch ($action) {
+	        case "success":
+	            $message = "Successfully create comment for document number ".$documentnumber.".";
+	            break;
+	        case "failed":
+	        	//use message from input
+	            break;
+	    }
+	    $message = $message. " Client IP address: ".$clientip.".";
+	    
+	    $form = array(  "idnumber" => $idnumber,
+	                    "category" => $category,
+	                    "projectnumber" => $projectnumber,
 	                    "action" => $action,
 	                    "message" => $message,
                     );
