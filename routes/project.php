@@ -121,7 +121,7 @@ $app->post('/newproject/create', function () use($app,$twig) {
 	$result = $controller->createProject($form);
 
 	if ($result[0]) {
-	    $app->flash('info', 'Project created (Proyek berhasil dibuat).');
+	    $app->flash('info', 'Begin verification process (Mulai tahap verifikasi).');
 	    
 	    //send message to phone
         $idnumberlist = array($clientid);
@@ -328,6 +328,7 @@ $app->get('/project/:projectnumber', function ($projectnumber) use ($twig,$app) 
             'headingcontent' => $header,
             'projectname' => $result["projectname"],
             'projectnumber' => $projectnumber,
+            'iscreator' => $iscreator,
             'creatorcontent' => $form[0],
             'clientcontent' => $form[1],
             'approval' => $showapprovalbutton,
@@ -428,7 +429,7 @@ $app->post('/project/confirm', function () use($app) {
 		$record = new WebRecord();
 		$record->recordproject($idnumber, $result["projectname"], $result["projectnumber"],"start", "");
 		
-		$app->flash('info', 'Project begin (Proyek dimulai).');
+		$app->flash('info', 'Project begin (Memulai proyek).');
     } else {
         $app->flash('info', 'Wait for other person approval (Tunggu approval pihak lain).');
     }
@@ -566,7 +567,7 @@ $app->post('/project/delete', function () use($app) {
                 
                 //save to record
             	$record = new WebRecord();
-            	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"delete");
+            	$record->recordproject($idnumber, $result["projectname"], $projectnumber,"delete", "");
                 break;
         }
         

@@ -67,15 +67,15 @@ $app->get('/document/:documentnumber', function ($documentnumber) use ($twig) {
     
     //construct document info
     $projectadrress = $Webaddr."/project/".$projectnumber;
-    $header = '<a href="'.$projectadrress.'"><p><b>Project Name : '.$projectname.'</b></p></a><p><b>Creator : '.$result["creator"].'</b></p><p><b>Signer : '.$result["signer"].'</b></p><p><b>Milestone : '.$milestone[$milestonenumber-1].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
-    $header = $header.'<p><b>Document Name : '.$result["documentname"].'</b></p><p><b>Document Description : '.$result["description"].'</b></p><p><b>Original Document Hash : '.$result["originalhash"].'</b></p><a href="'.$fileurl.'" target="_blank" class="btn btn-default btn-sm"><b>Download Document</b></a></p>';
+    $header = '<a href="'.$projectadrress.'"><p style="word-wrap: break-word;"><b>Project Name : '.$projectname.'</b></p></a><p style="word-wrap: break-word;"><b>Creator : '.$result["creator"].'</b></p><p style="word-wrap: break-word;"><b>Signer : '.$result["signer"].'</b></p><p><b>Milestone : '.$milestone[$milestonenumber-1].'</b></p><p><b>Modified : '.$result["modified"].'</b></p>';
+    $header = $header.'<p style="word-wrap: break-word;"><b>Document Name : '.$result["documentname"].'</b></p><p style="word-wrap: break-word;"><b>Document Description : '.$result["description"].'</b></p><p style="word-wrap: break-word;"><b>Original Document Hash : '.$result["originalhash"].'</b></p><a href="'.$fileurl.'" target="_blank" class="btn btn-default btn-sm"><b>Download Document</b></a></p>';
     
     $signingmenu = "";
     //construct signing menu
     if ($result["signature"]) {
         $signedurl = $result["signedfile"]->getURL();
         //file has been signed. display info
-        $signingmenu = '<p><b>Signed Hash : '.$result["signedhash"].'</b></p><p><b>Signature : '.$result["signature"].'</b></p><p><b>Signed Time  : '.$result["signedtime"].' WIB</b></p>';
+        $signingmenu = '<p style="word-wrap: break-word;"><b>Signed Hash : '.$result["signedhash"].'</b></p><p><b>Signature : '.$result["signature"].'</b></p><p><b>Signed Time  : '.$result["signedtime"].' WIB</b></p>';
         $signingmenu = $signingmenu. '<a href="'.$signedurl.'" target="_blank" class="btn btn-default btn-sm"><b>Download Signed Document</b></a>  <button class="btn btn-default btn-sm docverify-btn" type="submit"><b>Verify</b></button>';
     } else {
         //if project already finished. hide sign button
@@ -218,7 +218,7 @@ $app->post('/document/process', function () use($app,$twig) {
         
         //save to record
         $record = new WebRecord();
-	    $record->recorddocument($idnumber, $result[1], "create", $projectnumber);
+	    $record->recorddocument($idnumber, $result[1], "create", $projectnumber, "");
     } else {
         
         $errormessage = 'Failed to save document.';

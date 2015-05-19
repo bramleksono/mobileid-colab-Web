@@ -22,7 +22,7 @@ $app->post('/verify/request', function () use($app) {
     $result =sendjson($req,$CAverify);
     $result = json_decode($result, true);
     if ($result["success"]) {
-        $app->flash('info', 'Request sent. Check your device to confirm identity request.');
+        $app->flash('info', 'Check your device to confirm identity request (Periksa perangkat untuk mengkonfirmasi permintaan identitas).');
         
         //save to record
         $record = new WebRecord();;

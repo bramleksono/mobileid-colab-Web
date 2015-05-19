@@ -41,7 +41,13 @@
 		<button type="submit" class="btn btn-default btn-sm"><b>Create Document</b></button></form>
 		<hr>
         {% endif %}
-           
+        
+        {% if finished %}
+        <hr>
+        <h3>Guide (Petunjuk):</h2>
+        <p>1. Download and save <b>Project Report</b> to your computer for evidence (Unduh dan simpan <b>Project Report</b> untuk keperluan pembuktian di masa mendatang).</p>
+        {% endif %}
+	    
 	    {{ milestonedropdown | raw }}
 	    
 		<hr>
@@ -103,17 +109,19 @@
 		});
 		
 		$(document).on('click','.projectdelete-btn',function(){
-		    $.ajax(
-		    {
-		        url: '{{ WebAddr }}/project/delete',
-		        type: "POST",
-		        
-		        data: {"projectnumber": "{{ projectnumber }}"},
-		        success: function (result) {
-					 //alert(result);
-                     window.location.reload();
-		        }
-		    });
+            if (confirm("You want to delete this project (Anda ingin menghapus proyek) ?") == true) {
+    		    $.ajax(
+    		    {
+    		        url: '{{ WebAddr }}/project/delete',
+    		        type: "POST",
+    		        
+    		        data: {"projectnumber": "{{ projectnumber }}"},
+    		        success: function (result) {
+    					 //alert(result);
+                         window.location.reload();
+    		        }
+    		    });
+            }
 		});
 		</script>
 

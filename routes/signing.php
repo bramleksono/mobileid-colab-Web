@@ -41,7 +41,7 @@ $app->post('/signing/document', function () use($app) {
         
 
         if ($result["success"]) {
-            $app->flash('info', 'Request sent. Check your device to confirm signing request.');
+            $app->flash('info', 'Check your device to confirm signing request (Periksa perangkat untuk mengkonfirmasi permintaan tanda tangan).');
             
             //save to record
             $record = new WebRecord();
