@@ -331,7 +331,7 @@ $app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
                                                 ->setCellValue('B1', "Category")
                                                 ->setCellValue('C1', "Action")
                                                 ->setCellValue('D1', "Message")
-                                                ->setCellValue('E1', "Time");
+                                                ->setCellValue('E1', "Time (WIB)");
             
             $rowindex = 2;
             foreach ($contents as $content) {
@@ -354,7 +354,7 @@ $app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
                                                 ->setCellValue('B1', "Category")
                                                 ->setCellValue('C1', "Action")
                                                 ->setCellValue('D1', "Message")
-                                                ->setCellValue('E1', "Time");
+                                                ->setCellValue('E1', "Time (WIB)");
             
             $rowindex = 2;
             foreach ($contents as $content) {
@@ -377,7 +377,7 @@ $app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
                                                 ->setCellValue('B1', "Category")
                                                 ->setCellValue('C1', "Action")
                                                 ->setCellValue('D1', "Message")
-                                                ->setCellValue('E1', "Time");
+                                                ->setCellValue('E1', "Time (WIB)");
             
             $rowindex = 2;
             foreach ($contents as $content) {
@@ -400,7 +400,7 @@ $app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
                                                 ->setCellValue('B1', "Category")
                                                 ->setCellValue('C1', "Action")
                                                 ->setCellValue('D1', "Message")
-                                                ->setCellValue('E1', "Time");
+                                                ->setCellValue('E1', "Time (WIB)");
             
             $rowindex = 2;
             foreach ($contents as $content) {

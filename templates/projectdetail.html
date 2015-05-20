@@ -24,9 +24,9 @@
        <div class="panel-group" id="accordion">
        {{ milestonecontent | raw }}	    
         
-        {% if finished == false %}
         <hr>
         <h3>Guide (Petunjuk):</h2>
+        {% if finished == false %}
        	<p>1. Click <b>Create document</b> to add document in current milestone (Klik <b>Create document</b> untuk membuat dokumen pada milestone saat ini).</p>
        	<p>2. Create signature through document menu (Buat Tandatangan melalui menu dokumen).</p>
        	<p>3. Click <b>Create milestone</b> to add new milestone (Klik <b>Create milestone</b> untuk membuat tahap baru).</p>
@@ -43,9 +43,7 @@
         {% endif %}
         
         {% if finished %}
-        <hr>
-        <h3>Guide (Petunjuk):</h2>
-        <p>1. Download and save <b>Project Report</b> to your computer for evidence (Unduh dan simpan <b>Project Report</b> untuk keperluan pembuktian di masa mendatang).</p>
+        <p>Download and save <b>Project Report</b> to your computer for evidence (Unduh dan simpan <b>Project Report</b> untuk keperluan pembuktian di masa mendatang).</p>
         {% endif %}
 	    
 	    {{ milestonedropdown | raw }}

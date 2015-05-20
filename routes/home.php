@@ -10,7 +10,7 @@ $app->get('/home', function () use($app,$twig) {
         header("Location: $Webaddr");
         die();
     }
-	$greet = "Welcome, ".$username.". Select menu to get started.";
+	$greet = "Welcome, ".$username.". Select menu to get started (Selamat datang, ".$username.". Pilih menu disamping untuk memulai).";
 	
 	$display=array(
 		'pagetitle' => 'Main Menu - MobileID Web',

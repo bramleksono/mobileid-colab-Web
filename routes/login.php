@@ -5,7 +5,7 @@ $app->get('/login', function () use($app,$twig) {
 	$login=array(
 	    'pagetitle' => 'Login - MobileID Web',
 	    'heading' => 'MobileID Web Application',
-		'subheading' => 'Enter ID Number Below',
+		'subheading' => 'Enter Your ID Number (Masukkan Nomor KTP Anda)',
 		'license' => 'Mobile ID Web Application',
 		'year' => '2015',
 		'author' => 'Bramanto Leksono',
