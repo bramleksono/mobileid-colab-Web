@@ -14,6 +14,7 @@ class WebDocument {
 	private function searchWebDocumentDB($column, $query) {
 		$web_project_que = new ParseQuery("web_document");
     	$web_project_que->equalTo($column, $query);
+    	$web_project_que->ascending("createdAt");
     	$results = $web_project_que->find();
     	return $results;
 	}
