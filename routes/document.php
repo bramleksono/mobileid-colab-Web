@@ -25,8 +25,8 @@ $app->get('/document', function () use($app,$twig) {
 	}
 	
 	$display=array(
-		'pagetitle' => 'Project List - MobileID Web',
-	    'heading' => 'Project List',
+		'pagetitle' => 'Document List - MobileID Web',
+	    'heading' => 'Document List',
 	    'username' => $username,
 	    'idnumber' => $idnumber,
 		'license' => 'Mobile ID Web Application',
