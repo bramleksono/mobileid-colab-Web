@@ -33,15 +33,23 @@ $app->post('/process', function () use ($app, $twig) {
 		$req = (object) array("userinfo" => (object) array("nik" => $idnumber), "callback" => $Webloginconfirm);
 		$req = json_encode($req);
         $result =sendjson($req,$CAlogin);
-		if ($result) {
-			$result = json_decode($result);
-			$loginreq = $result->PID;
-		}
-		else {
+		$result = json_decode($result);
+		//check if error exist
+		if (!$result) {
 			$app->flash('error', 'Cannot connect to CA');
 			$app->redirect('/login');
-		}
-		
+        }
+        if ($result->success == false) {
+        	$app->flash('error', $result->reason);
+			$app->redirect('/login');
+        }
+		if (empty($result->PID)) {
+        	$app->flash('error', "Cannot connect to SI");
+			$app->redirect('/login');
+        }
+        
+		$loginreq = $result->PID;
+
 		$login=array(
 			'pagetitle' => 'Login - MobileID Web',
 			'heading' => 'Waiting CA response',
