@@ -99,7 +99,14 @@ class WebController {
             
             foreach ($creatorlist as $list) {
                 $data = $this->parseProject($list);
-                $creatortext = $creatortext.'<tr class="primary"><td>'.$i.'</td><td>'.$data["client"].'</td><td><a href="project/'.$data["projectnumber"].'">'.$data["projectname"].'</td><td>'.$data["currentmilestone"].'</td><td>'.$data["modified"].'</td><td>';
+                //change color for completed project
+                if ($data["finishproject"]) {
+                    $rowcolor = "primary";
+                } else {
+                    $rowcolor = "success";
+                }
+                
+                $creatortext = $creatortext.'<tr class="'.$rowcolor.'"><td>'.$i.'</td><td>'.$data["client"].'</td><td><a href="project/'.$data["projectnumber"].'">'.$data["projectname"].'</td><td>'.$data["currentmilestone"].'</td><td>'.$data["modified"].'</td><td>';
                 $i++;
             }
         }
