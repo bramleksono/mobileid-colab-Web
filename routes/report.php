@@ -1,9 +1,8 @@
 <?php
 
-require 'lib/tcpdf_min/tcpdf.php';
 require 'lib/PHPExcel/PHPExcel.php';  // Web Message Class
 
-$app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
+$app->get('/report/:projectnumber', function ($projectnumber) use ($app) {
     global $Webaddr;
     global $CAaddr;
     global $SIaddr;
@@ -62,8 +61,6 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
         //parse identity
         $creatoridentity = parseidentitytotext($creatoridentity);
         $clientidentity = parseidentitytotext($clientidentity);
-        
-    
     }
     
     if ($error == 0) {
@@ -90,25 +87,28 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
     		if (!isset($documentstructure[$currentmilestone])) {
     			$documentstructure[$currentmilestone] = "";
     		}
+    		if (!is_array($documentstructure[$currentmilestone])) {
+    			$documentstructure[$currentmilestone] = array();
+    		}
     		
-    		$documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
-            "Document Name : ".$documentname."\r\n".
-            "Document Number : ".$documentnumber."\r\n".
-            "Creator : ".$documentcreator."\r\n".
-            "Signer : ".$documentsigner."\r\n".
-            "Original File URL : ".$originalfile->getURL()."\r\n".
-            "Original File Hash : ".$originalhash."\r\n".
-            "Created at : ".$createdtime." WIB\r\n";
+    		array_push($documentstructure[$currentmilestone], 
+                                        "Document Name : ".$documentname,
+                                        "Document Number : ".$documentnumber,
+                                        "Creator : ".$documentcreator,
+                                        "Signer : ".$documentsigner,
+                                        "Original File URL : ".$originalfile->getURL(),
+                                        "Original File Hash : ".$originalhash,
+                                        "Created at : ".$createdtime." WIB");
+                                        
             if ($signature) {
-                $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
-                "Status : Signed\r\n".
-                "Signed File URL : ".$signedfile->getURL()."\r\n".
-                "Signed File Hash : ".$signedhash."\r\n".
-                "Signature : ".$signature."\r\n".
-                "Signed at : ".$signedtime." WIB\r\n";
+                array_push($documentstructure[$currentmilestone], 
+                                        "Status : Signed",
+                                        "Signed File URL : ".$signedfile->getURL(),
+                                        "Signed File Hash : ".$signedhash,
+                                        "Signature : ".$signature,
+                                        "Signed at : ".$signedtime." WIB");
             } else {
-                $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
-                "Status : Not Signed\r\n";
+                array_push($documentstructure[$currentmilestone], "Status : Not Signed");
             }
             
             //search comment
@@ -116,171 +116,27 @@ $app->get('/report/:projectnumber', function ($projectnumber) use ($twig,$app) {
         	$commentlist = $comments->findCommentsbydocument($documentnumber);
         	
             if ($commentlist != null) {
-                //echo "there is comment";
-                $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. 
-                "Document ".$documentnumber." Comment : \r\n";
-                
+                array_push($documentstructure[$currentmilestone], 
+                                        "Document ".$documentnumber." Comment : ");
+                                        
                 foreach ($commentlist as $comment) {
                     $poster = $comment->get('poster');
                     $modified = $comment->get('modified');
                     $commenttext = $comment->get('comment');
-                    $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. "By ".$poster." : ".$commenttext." (at time ".$modified." WIB)\r\n";
+                    array_push($documentstructure[$currentmilestone], 
+                                        "By ".$poster." : ".$commenttext." (at time ".$modified." WIB");
+                    
                     $file = $comment->get('file');
                     if ($file != "") {
-                        $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. "Comment file URL : ".$file->getURL()."\r\n";
+                        array_push($documentstructure[$currentmilestone], 
+                                        "Comment file URL : ".$file->getURL());
                     }
                 }
             }
-            
-            $documentstructure[$currentmilestone] = $documentstructure[$currentmilestone]. "\r\n";
+            //create new line
+            array_push($documentstructure[$currentmilestone], "");
     	}
     }
-    
-	switch ($error) {
-	    case 0:
-	        //create report
-    	    $current_date = new DateTime("now");
-        	$time = $current_date->format('Y-m-d H:i:s');
-            
-            //begin of report
-            $content = "Disclaimer\r\n";
-            $content = $content. "----------------\r\n";
-            $content = $content. "This is a report of finished project.\r\n";
-            $content = $content. "This document contain all information which can be used as a proof.\r\n";
-            
-            $content = $content. "\r\nServer Information\r\n";
-            $content = $content. "----------------\r\n";
-            $content = $content. "Web Address : ".$Webaddr."\r\n";
-            $content = $content. "CA Address : ".$CAaddr."\r\n";
-            $content = $content. "SI Address : ".$SIaddr."\r\n";
-            
-            $content = $content. "\r\nUser Information\r\n";
-            $content = $content. "----------------\r\n";
-            $content = $content. "Creator\r\n";
-            $content = $content. $creatoridentity;
-            $content = $content. "\r\nClient\r\n";
-            $content = $content. $clientidentity;
-            
-            $content = $content. "\r\n\r\nProject Information\r\n";
-            $content = $content. "----------------\r\n";
-            $content = $content. "Project Name : ".$result["projectname"]."\r\n";
-            $content = $content. "Project Number : ".$result["projectnumber"]."\r\n";
-            $content = $content. "Creator : ".$result["creator"]."\r\n";
-            $content = $content. "Client : ".$result["client"]."\r\n";
-            $content = $content. "Created at : ".$result["modified"]." WIB\r\n";
-            $content = $content. "Ended at : ".$result["ended"]." WIB\r\n\r\n";
-            
-            $milestonelist = $result["milestone"];
-            
-            $milestonenumber = 0;
-            foreach($milestonelist as $milestone) {
-                $content = $content. "Milestone Name : ".$milestone."\r\n";
-                $content = $content. "----------------\r\n";
-                if (isset($documentstructure[$milestonenumber])) {
-                    $content = $content. $documentstructure[$milestonenumber];
-                } else {
-                    $content = $content. "Empty Milestone\r\n\r\n";
-                }
-                
-                $milestonenumber++;
-            }
-            
-            $content = nl2br($content);
-            
-        	$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
-        	
-        	// set default monospaced font
-        	$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
-        	
-        	// set margins
-        	$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
-        	$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
-        	$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
-        	
-        	// set auto page breaks
-        	$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
-        	
-        	// ---------------------------------------------------------
-        	
-        	// set font
-        	$pdf->SetFont('helvetica', '', 12);
-        	
-        	// add a page
-        	$pdf->AddPage();
-        	
-        	// print a line of text
-        	$pdf->writeHTML($content, true, 0, true, 0);
-            
-            $pdf->lastPage();
-            
-        	$pdf->Output("project report ".$time.".pdf", 'D');
-        	
-            //echo $content;
-            
-	        break;
-	    case 1:
-	        echo "Error : Project is not exist!";
-	        die();
-	        break;
-	    case 2:
-	        echo "Error : You are not involved in this project";
-	        die();
-	        break;
-	    case 3:
-	        echo "Error : Project is not finished";
-	        die();
-	        break;
-	}
-
-});
-
-$app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
-    
-    global $Webaddr;
-    if(isset($_SESSION["idnumber"])){
-        $idnumber = $_SESSION["idnumber"];
-        $username = $_SESSION["name"];
-    }
-    else{
-        header("Location: $Webaddr");
-        die();
-    }
-    
-    $error = 0;
-    
-    $controller = new WebController($idnumber);
-    $project = $controller->unparsedProject($projectnumber);
-    if (!isset($project)) {
-        //project is not exist
-        $error = 1;
-    }
-    
-    if ($error == 0) {
-        //check user role
-    	$result = $controller->parseProject($project);
-    	$role = $controller->checkRole($result, $idnumber);    
-        
-    	$roletext ="";
-    	switch ($role) {
-    		case 1:
-    			$roletext = "as Creator";
-    			break;
-    		case 2:
-    			$roletext = "as Client";
-    			break;
-    		default:
-    		    $error = 2;
-    		    break;
-    	}
-    }
-    
-    if ($error == 0) {
-        //check if project status as finished
-        if (!$result["finishproject"]) {
-            $error = 3;
-        }
-    }
-    
 	switch ($error) {
 	    case 0:
 	        //create report
@@ -296,21 +152,59 @@ $app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
             							 ->setTitle($result["projectnumber"]." Log Report");
             
             // Add Project Information
-            $contents = array(  "Disclaimer", 
+            $disclaimer = array("Disclaimer",
+                                "---------------------",
                                 "This is a report of finished project.", 
                                 "This document contain all information which can be used as a proof.",
+                                "Please store this document in a safe place.",
                                 "",
-                                "Project Information",
-                                "Project Name : ".$result["projectname"],
-                                "Project Number : ".$result["projectnumber"],
-                                "Creator : ".$result["creator"],
-                                "Client : ".$result["client"],
-                                "Created at : ".$result["modified"],
-                                "Ended at : ".$result["ended"]." WIB",
+                                "Server Information",
+                                "---------------------",
+                                "Web Address : ".$Webaddr,
+                                "CA Address : ".$CAaddr,
+                                "SI Address : ".$SIaddr,
                                 "",
-                                "This report is generated in ".$time." WIB as user ".$idnumber."."
                         );
             
+            $userinformation = array(    "User Information",
+                                            "---------------------",
+                                            "Creator"
+                                        );
+            $userinformation = array_merge($userinformation, $creatoridentity);
+            array_push($userinformation, "Client");
+            $userinformation = array_merge($userinformation, $clientidentity);
+            array_push($userinformation, "");         
+            
+            $projectinformation = array(    "Project Information",
+                                            "---------------------",
+                                            "Project Name : ".$result["projectname"],
+                                            "Project Number : ".$result["projectnumber"],
+                                            "Creator : ".$result["creator"],
+                                            "Client : ".$result["client"],
+                                            "Created at : ".$result["modified"],
+                                            "Ended at : ".$result["ended"]." WIB",
+                                            "",
+                                        );
+            
+            $contents = array_merge($disclaimer, $userinformation);
+            $contents = array_merge($contents, $projectinformation);
+            
+            $milestonelist = $result["milestone"];
+            $milestonenumber = 0;
+            $milestoneinformation = array();
+            foreach($milestonelist as $milestone) {
+                array_push($milestoneinformation, "Milestone Name : ".$milestone,"---------------------");
+                if (is_array($documentstructure[$milestonenumber])) {
+                    $milestoneinformation = array_merge($milestoneinformation, $documentstructure[$milestonenumber]);
+                } else {
+                    array_push($milestoneinformation, "Empty Milestone");
+                }
+                $milestonenumber++;
+            }
+            $contents = array_merge($contents, $milestoneinformation);
+
+            array_push($contents, "This report is generated in ".$time." WIB as user ".$idnumber."." );                            
+
             $objPHPExcel->setActiveSheetIndex(0);
             $rowindex = 1;
             foreach ($contents as $content) {
@@ -441,21 +335,21 @@ $app->get('/log/:projectnumber', function ($projectnumber) use ($app) {
 
 
 function parseidentitytotext($identity) {
-    $identity =  "NIK : ". $identity["nik"] . "\r\n".
-             "Nama : ". $identity["nama"] . "\r\n".
-             "Tempat/Tgl Lahir : ". $identity["ttl"] . "\r\n".
-             "Jenis Kelamin : ". $identity["jeniskelamin"] . "\r\n".
-             "Gol Darah : ". $identity["goldarah"] . "\r\n".
-             "Alamat : ". $identity["alamat"] . "\r\n".
-             "RT/RW : ". $identity["rtrw"] . "\r\n".
-             "Kel/Desa : ". $identity["keldesa"] . "\r\n".
-             "Kecamatan : ". $identity["kecamatan"] . "\r\n".
-             "Agama : ". $identity["agama"] . "\r\n".
-             "Status Perkawinan : ". $identity["statperkawinan"] . "\r\n".
-             "Pekerjaan : ". $identity["pekerjaan"] . "\r\n".
-             "Kewarganegaraan : ". $identity["kewarganegaraan"] . "\r\n".
-             "Berlaku Hingga : ". $identity["berlaku"] . "\r\n";   
-             
+    $identity =  array( "NIK : ". $identity["nik"],
+                        "Nama : ". $identity["nama"],
+                        "Tempat/Tgl Lahir : ". $identity["ttl"],
+                        "Jenis Kelamin : ". $identity["jeniskelamin"],
+                        "Gol Darah : ". $identity["goldarah"],
+                        "Alamat : ". $identity["alamat"],
+                        "RT/RW : ". $identity["rtrw"],
+                        "Kel/Desa : ". $identity["keldesa"],
+                        "Kecamatan : ". $identity["kecamatan"],
+                        "Agama : ". $identity["agama"],
+                        "Status Perkawinan : ". $identity["statperkawinan"],
+                        "Pekerjaan : ". $identity["pekerjaan"],
+                        "Kewarganegaraan : ". $identity["kewarganegaraan"],
+                        "Berlaku Hingga : ". $identity["berlaku"]
+                        );
     return $identity;
 }
 

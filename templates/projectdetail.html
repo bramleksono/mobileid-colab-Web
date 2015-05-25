@@ -31,7 +31,7 @@
        	<p>2. Create signature through document menu (Buat Tandatangan melalui menu dokumen).</p>
        	<p>3. Click <b>Create milestone</b> to add new milestone (Klik <b>Create milestone</b> untuk membuat tahap baru).</p>
        	<p>4. Click <b>Project Finished</b> to finalize project (Klik <b>Project Finished</b> untuk mengakhiri proyek).</p>
-       	<p>4. Download and save <b>Project Report</b> to your computer for evidence (Unduh dan simpan <b>Project Report</b> untuk keperluan pembuktian di masa mendatang).</p>
+       	<p>4. Download and save <b>Project Report</b> to your computer as evidence (Unduh dan simpan <b>Project Report</b> sebagai bukti).</p>
        	<hr>
 		<form class="input-append" role="form" name="newdocument" action="{{ WebAddr }}/document/create" method="post">
 		<input type="hidden" name="projectname" id="projectname" value="{{ projectname }}" />
@@ -126,7 +126,7 @@
         {% endif %}
         
         {% if finished %}
-        <a class="btn btn-sm btn-default" target="_blank" href="{{ reporturl }}"><b>Download Project Report</b></a>  <a class="btn btn-sm btn-default" target="_blank" href="{{ logurl }}"><b>Download Project Log</b></a>
+        <a class="btn btn-sm btn-default" target="_blank" href="{{ reporturl }}"><b>Download Project Report</b></a>
         {% endif %}
 
 {% endblock %}
