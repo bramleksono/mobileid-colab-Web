@@ -1,20 +1,6 @@
 {% extends "master.html" %}
 
 {% block content %}
-          {% if info %}
-          
-			  <div class="alert alert-success" role="alert">
-			  {{ info }}
-			  </div>
-		  {% endif %}
-		  
-		  {% if alert %}
-			  <div class="alert alert-danger" role="alert">
-			  <span class="sr-only">Error:</span>
-			  {{ alert }}
-			  </div>
-		  {% endif %}
-		       	
       <!-- column 2 -->	
        <h3> {{ heading }}</h3>
        <hr>
@@ -27,6 +13,7 @@
        <p>2. Create signature using checkbox and <b>Sign</b> button (Buat Tandatangan menggunakan kotak centang dan tombol <b>Sign</b>).</p>
 	   <p>3. View signed document using <b>Download signed document</b> (Lihat dokumen yang telah ditandatangan menggunakan <b>Download signed document</b>).</p>
        <p>4. Verify signature using <b>Verify</b> button (Verifikasi tandatangan dengan tombol <b>Verify</b>).</p>
+       <p>5. Return to project by click on project name (Kembali ke proyek dengan mengetuk nama proyek).</p>
        <hr>
        
        <h3>Signature</h2>
@@ -34,6 +21,19 @@
        {{ signingcontent | raw }}
        
 		<hr>
+		{% if info %}
+			<div class="alert alert-success" role="alert">
+			{{ info }}
+			</div>
+		{% endif %}
+		{% if alert %}
+			<div class="alert alert-danger" role="alert">
+			<span class="sr-only">Error:</span>
+			{{ alert }}
+			</div>
+		{% endif %}
+
+		
 		<script>
 		
 		var docsignBtn = '<button class="btn btn-primary docsign-btn" type="submit">Sign</button>';
@@ -56,7 +56,7 @@
 		        data: {"documentnumber": "{{ documentnumber }}","projectname": "{{ projectname }}","signerid": "{{ signerid }}","fileurl":"{{ fileurl }}",
 		        		"filehash":"{{ filehash }}","documentname":"{{ documentname }}","description":"{{ description }}","callback":"{{ callback }}"},
 		        success: function (result) {
-					//alert(result);
+					//alert("Check your device for confirmation. Refresh this page after confirm.");
 					window.location.reload();
 		        }
 		    });
