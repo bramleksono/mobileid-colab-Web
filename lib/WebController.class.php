@@ -101,9 +101,9 @@ class WebController {
                 $data = $this->parseProject($list);
                 //change color for completed project
                 if ($data["finishproject"]) {
-                    $rowcolor = "primary";
-                } else {
                     $rowcolor = "success";
+                } else {
+                    $rowcolor = "primary";
                 }
                 
                 $creatortext = $creatortext.'<tr class="'.$rowcolor.'"><td>'.$i.'</td><td>'.$data["client"].'</td><td><a href="project/'.$data["projectnumber"].'">'.$data["projectname"].'</td><td>'.$data["currentmilestone"].'</td><td>'.$data["modified"].'</td><td>';
