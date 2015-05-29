@@ -20,8 +20,9 @@ $app->get('/session_destroyer', function () use($app) {
 
     //save to record
 	$record = new WebRecord();
-	$record->recordlogin($_SESSION["idnumber"], "logout");
-
+	if (isset($_SESSION["idnumber"])) {
+    	$record->recordlogin($_SESSION["idnumber"], "logout");
+	}
 
     // Unset all of the session variables.
     $_SESSION = array();

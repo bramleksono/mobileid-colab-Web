@@ -213,7 +213,7 @@ $app->post('/document/process', function () use($app,$twig) {
         //send message to phone
         $idnumberlist = array($_POST["signer"]);
         $messagecontroller = new WebMessage();
-        $messagetext = "Document ".$_POST["documentname"]." added to ".$projectname." project.";
+        $messagetext = "You are added as signer in ".$_POST["documentname"]." document at ".$projectname." project.";
         $messagecontroller->sendmessageto($idnumberlist, $messagetext);
         
         //save to record
