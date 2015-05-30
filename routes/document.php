@@ -177,7 +177,29 @@ $app->post('/document/process', function () use($app,$twig) {
         header("Location: $Webaddr");
         die();
     }
+    $projectnumber = $_POST["projectnumber"];
     
+    if ($_POST["documentname"] == ""){
+        $errormessage = 'You must enter document name.';
+        $app->flash('error', $errormessage);
+        $record->recorddocument($idnumber, $documentnumber, "failed", $projectnumber, $errormessage);
+        $app->redirect('/project/'.$projectnumber);
+    }
+    
+    if ($_POST["signer"] == "--Choose signer--"){
+        $errormessage = 'You must choose signer.';
+        $app->flash('error', $errormessage);
+        $record->recorddocument($idnumber, $documentnumber, "failed", $projectnumber, $errormessage);
+        $app->redirect('/project/'.$projectnumber);
+    }
+
+    if ($_FILES["uploadFile"]["name"] == ""){
+        $errormessage = 'You must upload a document.';
+        $app->flash('error', $errormessage);
+        $record->recorddocument($idnumber, $documentnumber, "failed", $projectnumber, $errormessage);
+        $app->redirect('/project/'.$projectnumber);
+    } 
+
     $target_dir = "temp/";
     $filename = basename( $_FILES["uploadFile"]["name"]);
     $target_dir = $target_dir . $filename;
@@ -193,7 +215,6 @@ $app->post('/document/process', function () use($app,$twig) {
     
     $file = file_get_contents($target_dir, true);
     
-    $projectnumber = $_POST["projectnumber"];
     $controller = new WebController($idnumber);
     $project = $controller->unparsedProject($projectnumber);
     $projectname = $project->get('projectname');

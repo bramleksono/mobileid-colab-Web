@@ -1,19 +1,6 @@
 {% extends "master.html" %}
 
 {% block content %}
-          {% if info %}
-          
-			  <div class="alert alert-success" role="alert">
-			  {{ info }}
-			  </div>
-		  {% endif %}
-		  
-		  {% if alert %}
-			  <div class="alert alert-danger" role="alert">
-			  <span class="sr-only">Error:</span>
-			  {{ alert }}
-			  </div>
-		  {% endif %}
 		       	
       <!-- column 2 -->	
        <h3> {{ heading }}</h3>
@@ -30,9 +17,9 @@
        	<p>1. Click <b>Create document</b> to add document in current milestone (Ketuk <b>Create document</b> untuk membuat dokumen pada milestone saat ini).</p>
        	<p>2. Create signature by click on document name (Buat tanda tangan dengan mengetuk nama dokumen).</p>
        	<p>3. Click <b>Create milestone</b> to add new milestone (Ketuk <b>Create milestone</b> untuk membuat tahap baru).</p>
-       	<p>4. Click <b>Project Finished</b> to finalize project (Ketuk <b>Project Finished</b> untuk mengakhiri proyek).</p>
+       	<p>4. Click <b>Finish Project</b> to finalize project (Ketuk <b>Finish Project</b> untuk mengakhiri proyek).</p>
        	<p>5. Download and save <b>Project Report</b> to your computer as evidence (Unduh dan simpan <b>Project Report</b> sebagai bukti).</p>
-	    <img src="{{ WebAddr }}/static/signing.jpg" alt="Signing Work Flow">
+        <a class="btn btn-sm btn-default" target="_blank" href="{{ WebAddr }}/static/signing.jpg">Document Signing Guide</a>
        	<hr>
 		<form class="input-append" role="form" name="newdocument" action="{{ WebAddr }}/document/create" method="post">
 		<input type="hidden" name="projectname" id="projectname" value="{{ projectname }}" />
@@ -50,6 +37,20 @@
 	    {{ milestonedropdown | raw }}
 	    
 		<hr>
+		
+          {% if info %}
+          
+			  <div class="alert alert-success" role="alert">
+			  {{ info }}
+			  </div>
+		  {% endif %}
+		  
+		  {% if alert %}
+			  <div class="alert alert-danger" role="alert">
+			  <span class="sr-only">Error:</span>
+			  {{ alert }}
+			  </div>
+		  {% endif %}
         
         {% if iscreator and finished == false %}
         <button class="btn btn-default btn-sm milestonedelete-btn"><b>Delete Last Milestone</b></button>
@@ -66,6 +67,7 @@
         
         <script>
         $(document).on('click','.milestonedelete-btn',function(){
+			$(this).attr("disabled", "disabled");
 		    $.ajax(
 		    {
 		        url: '{{ WebAddr }}/project/milestone/delete',
@@ -80,6 +82,7 @@
 		});
         
         $(document).on('click','.milestonenext-btn',function(){
+			$(this).attr("disabled", "disabled");
 		    $.ajax(
 		    {
 		        url: '{{ WebAddr }}/project/next',
@@ -94,6 +97,7 @@
 		});
             
         $(document).on('click','.projectfinish-btn',function(){
+			$(this).attr("disabled", "disabled");
 		    $.ajax(
 		    {
 		        url: '{{ WebAddr }}/project/finish',
@@ -109,6 +113,7 @@
 		
 		$(document).on('click','.projectdelete-btn',function(){
             if (confirm("You want to delete this project (Anda ingin menghapus proyek) ?") == true) {
+				$(this).attr("disabled", "disabled");
     		    $.ajax(
     		    {
     		        url: '{{ WebAddr }}/project/delete',

@@ -18,6 +18,10 @@
       <!-- column 2 -->	
        <h3> {{ heading }}</h3>
        <hr>
+       <h3>Guide (Petunjuk):</h2>
+	   <p>Fill forms below, and press <b>Upload File</b> (Isi form dibawah ini, kemudian tekan <b>Upload File</b>).</p>
+	   <a class="btn btn-sm btn-default" target="_blank" href="{{ WebAddr }}/static/signing.jpg">Document Signing Guide</a>
+       <hr>
        
 <div class="container">
 	<div class="row">
@@ -58,6 +62,7 @@
 				    <label for="content" class="col-sm-2 control-label">Signer</label>
 				    <div class="col-xs-10">
 					<select class="form-control" id="signer" name="signer">
+                        <option value="--Choose signer--">--Choose signer--</option>
                         <option value="creator">Creator</option>
                         <option value="client">Client</option>
                     </select></div>

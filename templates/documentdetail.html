@@ -14,13 +14,8 @@
 	   <p>3. View signed document using <b>Download signed document</b> (Lihat dokumen yang telah ditandatangan menggunakan <b>Download signed document</b>).</p>
        <p>4. Verify signature using <b>Verify</b> button (Verifikasi tandatangan dengan tombol <b>Verify</b>).</p>
        <p>5. Return to project by click on project name (Kembali ke proyek dengan mengetuk nama proyek).</p>
+       <a class="btn btn-sm btn-default" target="_blank" href="{{ WebAddr }}/static/signing.jpg">Document Signing Guide</a>
        <hr>
-       
-       <h3>Signature</h2>
-       
-       {{ signingcontent | raw }}
-       
-		<hr>
 		{% if info %}
 			<div class="alert alert-success" role="alert">
 			{{ info }}
@@ -32,6 +27,12 @@
 			{{ alert }}
 			</div>
 		{% endif %}
+       
+       <h3>Signature</h2>
+       
+       {{ signingcontent | raw }}
+       
+		<hr>
 
 		
 		<script>
@@ -48,6 +49,7 @@
 	    });
     
 		$(document).on('click','.docsign-btn',function(){
+			$(this).attr("disabled", "disabled");
 		    $.ajax(
 		    {
 		        url: '{{ WebAddr }}/signing/document',
@@ -56,6 +58,7 @@
 		        data: {"documentnumber": "{{ documentnumber }}","projectname": "{{ projectname }}","signerid": "{{ signerid }}","fileurl":"{{ fileurl }}",
 		        		"filehash":"{{ filehash }}","documentname":"{{ documentname }}","description":"{{ description }}","callback":"{{ callback }}"},
 		        success: function (result) {
+					 $(this).attr("enabled", "enabled");
 					//alert("Check your device for confirmation. Refresh this page after confirm.");
 					window.location.reload();
 		        }
@@ -70,6 +73,7 @@
 		
 		        data: {"signedhash": "{{ signedhash }}","signedtime": "{{ signedtime }}","signature": "{{ signature }}","signerid":"{{ signerid }}"},
 		        success: function (result) {
+						docverify-btn.disabled = false;
 					 alert(result);
 		        }
 		    });
