@@ -66,6 +66,7 @@
 		});	
 		
 		$(document).on('click','.docverify-btn',function(){
+			$(this).attr("disabled", "disabled");
 		    $.ajax(
 		    {
 		        url: '{{ WebAddr }}/signing/verifydocument',
@@ -73,7 +74,6 @@
 		
 		        data: {"signedhash": "{{ signedhash }}","signedtime": "{{ signedtime }}","signature": "{{ signature }}","signerid":"{{ signerid }}"},
 		        success: function (result) {
-						docverify-btn.disabled = false;
 					 alert(result);
 		        }
 		    });

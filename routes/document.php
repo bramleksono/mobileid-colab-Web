@@ -179,6 +179,7 @@ $app->post('/document/process', function () use($app,$twig) {
     }
     $projectnumber = $_POST["projectnumber"];
     
+    $record = new WebRecord();
     if ($_POST["documentname"] == ""){
         $errormessage = 'You must enter document name.';
         $app->flash('error', $errormessage);
@@ -238,7 +239,6 @@ $app->post('/document/process', function () use($app,$twig) {
         $messagecontroller->sendmessageto($idnumberlist, $messagetext);
         
         //save to record
-        $record = new WebRecord();
 	    $record->recorddocument($idnumber, $result[1], "create", $projectnumber, "");
     } else {
         
@@ -246,7 +246,6 @@ $app->post('/document/process', function () use($app,$twig) {
         $app->flash('error', $errormessage);
         
         //save to record
-        $record = new WebRecord();
     	$record->recorddocument($idnumber, $documentnumber, "failed", $projectnumber, $errormessage);
     }
 	$app->redirect('/project/'.$projectnumber);
@@ -298,11 +297,16 @@ $app->post('/document/receive', function () use($app) {
         $result = $documentcontroller->saveSignedDocument($body, $document);
         
         //save to record
-    
         $project = $documentcontroller->getProject($parseddocument["project"]);
         $projectnumber = $project->get('projectnumber');
         $record = new WebRecord();
     	$record->recordsigning($parseddocument["signer"], $body["documentnumber"], "success", $projectnumber, "");
+    	
+    	//send message to creator phone
+        $idnumberlist = array($parseddocument["creator"]);
+        $messagecontroller = new WebMessage();
+        $messagetext = "Document ".$parseddocument["documentname"]." has been signed by ".$parseddocument["signer"].".";
+        $messagecontroller->sendmessageto($idnumberlist, $messagetext);
     }
 });
 

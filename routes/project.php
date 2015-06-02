@@ -366,6 +366,15 @@ $app->post('/project/next', function () use($app) {
     
     $projectnumber = $_POST["projectnumber"];
     $milestonename = $_POST["milestonename"];
+	
+    $record = new WebRecord();
+	if ($milestonename == ""){
+        $errormessage = 'You must enter milestone name.';
+        $app->flash('error', $errormessage);
+    	$record->recordmilestone($idnumber, $milestonename, $projectnumber, "failed", $errormessage);
+        $app->redirect('/project/'.$projectnumber);
+    }
+	
 	$controller = new WebController($idnumber);
 	$project = $controller->nextMilestone($projectnumber, $milestonename);
 	
@@ -373,7 +382,6 @@ $app->post('/project/next', function () use($app) {
 	$app->flash('info', 'Milestone '.$milestonename.' created.');
 	
 	//save to record
-	$record = new WebRecord();
 	$record->recordmilestone($idnumber, $milestonename, $projectnumber, "next", "");
 });
 
@@ -422,14 +430,14 @@ $app->post('/project/confirm', function () use($app) {
         //send message to phone
         $idnumberlist = array($result["creator"], $result["client"]);
         $messagecontroller = new WebMessage();
-        $messagetext = "Project ".$result["projectname"]." begin.";
+        $messagetext = "Project ".$result["projectname"]." signing begin.";
         $messagecontroller->sendmessageto($idnumberlist, $messagetext);
         
         //save to record
 		$record = new WebRecord();
 		$record->recordproject($idnumber, $result["projectname"], $result["projectnumber"],"start", "");
 		
-		$app->flash('info', 'Project begin (Memulai proyek).');
+		$app->flash('info', 'Project signing begin (Penandatanganan proyek dimulai).');
     } else {
         $app->flash('info', 'Wait for other person approval (Tunggu approval pihak lain).');
     }
